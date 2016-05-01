@@ -20,9 +20,17 @@
 
 #include "terrain.h"
 
+/**
+ * @fn          Terrain
+ *
+ * @brief       terrain constructor
+ *
+ * @return      void
+ */
 Terrain::Terrain() {
-    this->width = 100;
-    this->height = 100;
+    this->width = 200;
+    this->height = 200;
+    this->sample_interval = 10;
 
     Shader* shader = new Shader("assets/shaders/terrain");
 
@@ -43,12 +51,29 @@ Terrain::Terrain() {
     this->ter->static_load();
 }
 
+/**
+ * @fn          get
+ *
+ * @brief       get a reference to the terrain
+ *
+ * @return      reference to the terrain object (singleton pattern)
+ */
 void Terrain::draw() {
     this->ter->draw();
 }
 
+/**
+ * @fn          generate_terrain
+ *
+ * @brief       generate the vertices for the terrain using the height map
+ *
+ * @param mesh  pointer to a mesh object
+ *
+ * @return      void
+ */
 void Terrain::generate_terrain(Mesh* mesh) {
-    PerlinNoiseGenerator pn(2.0f, 1.2f, 5, 2763226322);
+    // generate terrain
+    this->generate_height_map();
 
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> positions;
@@ -58,8 +83,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
             // create positions
             float x = (float)i;
             float y = (float)j;
-            float z = pn.get_perlin_noise(x + y * this->width);
-            positions.push_back(glm::vec3(x, y, z));
+            positions.push_back(glm::vec3(x, y, this->heights[j * (this->width + 1) + i]));
 
             // create indices
             if(i != this->width && j != this->height) {
@@ -106,4 +130,139 @@ void Terrain::generate_terrain(Mesh* mesh) {
     mesh->set_indices(indices);
     mesh->set_positions(positions);
     mesh->set_normals(normals);
+}
+
+/**
+ * @fn          generate_height_map
+ *
+ * @brief       generate the height map for the terrain
+ *
+ * @return      void
+ */
+void Terrain::generate_height_map() {
+    PerlinNoiseGenerator pn(1.0f, 1.2f, 5, 2763226322);
+    this->heights.resize((this->width + 1) * (this->height + 1), 0.0);
+    for(unsigned int j=0; j<= this->height; j+=this->sample_interval) {
+        for(unsigned int i=0; i<= this->width; i+=this->sample_interval) {
+            this->heights[j * (this->width + 1) + i] = pn.get_perlin_noise(i + j * (this->width + 1));
+        }
+    }
+
+    for(unsigned int j=0; j<= this->height; j++) {
+        for(unsigned int i=0; i<= this->width; i++) {
+
+            if(i % this->sample_interval == 0 && j % this->sample_interval == 0) {
+                continue;
+            }
+
+            unsigned int x = floor(i / this->sample_interval) * this->sample_interval;
+            unsigned int y = floor(j / this->sample_interval) * this->sample_interval;
+
+            unsigned int ixx[4];
+            unsigned int iyy[4];
+
+            if(!(i % this->sample_interval == 0 && j % this->sample_interval == 0)) {
+                ixx[0] = x - this->sample_interval;
+                ixx[1] = x;
+                ixx[2] = x + this->sample_interval;
+                ixx[3] = x + 10;
+
+                iyy[0] = y - this->sample_interval;
+                iyy[1] = y;
+                iyy[2] = y + this->sample_interval;
+                iyy[3] = y + 10;
+            }
+
+            if(i < this->sample_interval) {
+                ixx[0] = 0;
+                ixx[1] = 0;
+            }
+
+            if(j < this->sample_interval) {
+                iyy[0] = 0;
+                iyy[1] = 0;
+            }
+
+            if(i > this->width - this->sample_interval) {
+                ixx[2] = floor(this->width / this->sample_interval) * this->sample_interval;
+                ixx[3] = floor(this->width / this->sample_interval) * this->sample_interval;
+            }
+
+            if(j > this->height - this->sample_interval) {
+                iyy[3] = floor(this->height / this->sample_interval) * this->sample_interval;;
+                iyy[4] = floor(this->height / this->sample_interval) * this->sample_interval;;
+            }
+
+            double p[4][4];
+            p[0][0] = this->heights[idx(ixx[0], iyy[0])];
+            p[1][0] = this->heights[idx(ixx[1], iyy[0])];
+            p[2][0] = this->heights[idx(ixx[2], iyy[0])];
+            p[3][0] = this->heights[idx(ixx[3], iyy[0])];
+
+            p[0][1] = this->heights[idx(ixx[0], iyy[1])];
+            p[1][1] = this->heights[idx(ixx[1], iyy[1])];
+            p[2][1] = this->heights[idx(ixx[2], iyy[1])];
+            p[3][1] = this->heights[idx(ixx[3], iyy[1])];
+
+            p[0][2] = this->heights[idx(ixx[0], iyy[2])];
+            p[1][2] = this->heights[idx(ixx[1], iyy[2])];
+            p[2][2] = this->heights[idx(ixx[2], iyy[2])];
+            p[3][2] = this->heights[idx(ixx[3], iyy[2])];
+
+            p[0][3] = this->heights[idx(ixx[0], iyy[3])];
+            p[1][3] = this->heights[idx(ixx[1], iyy[3])];
+            p[2][3] = this->heights[idx(ixx[2], iyy[3])];
+            p[3][3] = this->heights[idx(ixx[3], iyy[3])];
+
+            double xx = double(i % this->sample_interval) / (double)this->sample_interval;
+            double yy = double(j % this->sample_interval) / (double)this->sample_interval;
+
+            this->heights[j * (this->width + 1) + i] = this->bicubic_interpolate(p, xx, yy);
+        }
+    }
+}
+
+/**
+ * @fn          cubic_interpolate
+ *
+ * @brief       performs a 1D cubic interpolation
+ *
+ * @return      interpolated value
+ */
+double Terrain::cubic_interpolate (double p[4], double x) {
+    return p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
+}
+
+/**
+ * @fn          bicubic_interpolate
+ *
+ * @brief       performs a 2D cubic interpolation
+ *
+ * @param p     matrix holding boundary values
+ * @param x     fractional x coordinate [0,1]
+ * @param y     fractional y coordinate [0,1]
+ *
+ * @return      interpolated value
+ */
+double Terrain::bicubic_interpolate (double p[4][4], double x, double y) {
+    double arr[4];
+    arr[0] = cubic_interpolate(p[0], y);
+    arr[1] = cubic_interpolate(p[1], y);
+    arr[2] = cubic_interpolate(p[2], y);
+    arr[3] = cubic_interpolate(p[3], y);
+    return cubic_interpolate(arr, x);
+}
+
+/**
+ * @fn          idx
+ *
+ * @brief       return the index of the height map
+ *
+ * @param i     x map coordinate
+ * @param j     y map coordinate
+ *
+ * @return      void
+ */
+unsigned int Terrain::idx(unsigned int i, unsigned int j) {
+    return i + (this->width + 1) * j;
 }
