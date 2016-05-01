@@ -29,6 +29,7 @@
 
 # povray
 *.pov
+err
 
 bin/isana
 *.ply
