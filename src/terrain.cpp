@@ -189,8 +189,8 @@ void Terrain::generate_height_map() {
             }
 
             if(j > this->height - this->sample_interval) {
+                iyy[2] = floor(this->height / this->sample_interval) * this->sample_interval;;
                 iyy[3] = floor(this->height / this->sample_interval) * this->sample_interval;;
-                iyy[4] = floor(this->height / this->sample_interval) * this->sample_interval;;
             }
 
             double p[4][4];
