@@ -48,6 +48,8 @@ void Terrain::draw() {
 }
 
 void Terrain::generate_terrain(Mesh* mesh) {
+    PerlinNoiseGenerator pn(2.0f, 1.2f, 5, 2763226322);
+
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> positions;
 
@@ -56,7 +58,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
             // create positions
             float x = (float)i;
             float y = (float)j;
-            float z = 5.0f * std::sin(x * .2) * std::sin(y * .2);
+            float z = pn.get_perlin_noise(x + y * this->width);
             positions.push_back(glm::vec3(x, y, z));
 
             // create indices

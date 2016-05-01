@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -18,40 +18,28 @@
 #                                                                         #
 #**************************************************************************/
 
-#ifndef _TERRAIN_H
-#define _TERRAIN_H
+#ifndef _PERLIN_NOISE_H
+#define _PERLIN_NOISE_H
 
-#include "perlin_noise.h"
-#include "object.h"
+#include <boost/random.hpp>
+#include <cmath>
+#include <time.h>
+#include <stdlib.h>
 
-class Terrain {
-private:
-    ObjectMesh* ter;
-
-    unsigned int width;
-    unsigned int height;
-
+class PerlinNoiseGenerator{
 public:
-    /**
-     * @fn          get
-     *
-     * @brief       get a reference to the terrain
-     *
-     * @return      reference to the terrain object (singleton pattern)
-     */
-    static Terrain& get() {
-        static Terrain terrain_instance;
-        return terrain_instance;
-    }
+    PerlinNoiseGenerator(double _a, double _b, unsigned int _itr, unsigned int _seed);
 
-    void draw();
+    double get_perlin_noise(int x);
+
 private:
-    Terrain();
+    unsigned int itr;
+    unsigned int seed;
+    double a;
+    double b;
 
-    void generate_terrain(Mesh* mesh);
+    double noise2(double x);
 
-    Terrain(Terrain const&)          = delete;
-    void operator=(Terrain const&)  = delete;
 };
 
-#endif //_TERRAIN_H
+#endif //_PERLIN_NOISE_H

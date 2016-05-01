@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -18,40 +18,30 @@
 #                                                                         #
 #**************************************************************************/
 
-#ifndef _TERRAIN_H
-#define _TERRAIN_H
-
 #include "perlin_noise.h"
-#include "object.h"
 
-class Terrain {
-private:
-    ObjectMesh* ter;
+PerlinNoiseGenerator::PerlinNoiseGenerator(double _a, double _b, unsigned int _itr, unsigned int _seed) {
+    this->a = _a;
+    this->b = _b;
+    this->itr = _itr;
+    this->seed = _seed;
+}
 
-    unsigned int width;
-    unsigned int height;
-
-public:
-    /**
-     * @fn          get
-     *
-     * @brief       get a reference to the terrain
-     *
-     * @return      reference to the terrain object (singleton pattern)
-     */
-    static Terrain& get() {
-        static Terrain terrain_instance;
-        return terrain_instance;
+double PerlinNoiseGenerator::get_perlin_noise(int x) {
+    double sum = 0.0;
+    for(unsigned int i=0; i < this->itr; i++) {
+        sum += this->noise2(std::pow(this->b, (double)i) * x) /
+                            std::pow(this->a, (double)i);
     }
 
-    void draw();
-private:
-    Terrain();
+    return sum;
+}
 
-    void generate_terrain(Mesh* mesh);
-
-    Terrain(Terrain const&)          = delete;
-    void operator=(Terrain const&)  = delete;
-};
-
-#endif //_TERRAIN_H
+double PerlinNoiseGenerator::noise2(double x) {
+   boost::random::mt19937 rng;
+   rng.seed(uint32_t(this->seed - x));
+   boost::uniform_real<> dist(0.0, 1.0);
+   boost::variate_generator<boost::mt19937&, boost::uniform_real<> >
+      die(rng, dist);
+   return die();
+}
