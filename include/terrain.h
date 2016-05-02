@@ -28,6 +28,8 @@ class Terrain {
 private:
     ObjectColoredMesh* ter;                //!< objects representing the map
 
+    std::vector<ObjectMesh> trees;
+
     unsigned int width;             //!< width of the map in units
     unsigned int height;            //!< height of the map in units
 
@@ -86,6 +88,8 @@ private:
      * @return      void
      */
     void generate_height_map();
+
+    void generate_trees();
 
     /**
      * @fn          cubic_interpolate

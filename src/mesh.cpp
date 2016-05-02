@@ -165,6 +165,8 @@ void Mesh::load_mesh_from_file(const std::string& filename) {
             this->normals.push_back(_normal_coordinates[_normal_indices[i]]);
         }
     }
+
+    std::cout << _position_indices.size() << std::endl;
 }
 
 void Mesh::center() {

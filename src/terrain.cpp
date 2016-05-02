@@ -50,6 +50,8 @@ Terrain::Terrain() {
 
     this->ter = new ObjectColoredMesh(shader, mesh);
     this->ter->static_load();
+
+    this->generate_trees();
 }
 
 /**
@@ -61,6 +63,10 @@ Terrain::Terrain() {
  */
 void Terrain::draw() {
     this->ter->draw();
+
+    for(unsigned int i=0; i<this->trees.size(); i++) {
+        this->trees[i].draw();
+    }
 }
 
 /**
@@ -247,6 +253,30 @@ void Terrain::generate_height_map() {
 
             this->heights[j * (this->width + 1) + i] = this->bicubic_interpolate(p, xx, yy);
         }
+    }
+}
+
+void Terrain::generate_trees() {
+    Shader* shader = new Shader("assets/shaders/tree");
+
+    shader->add_uniform(ShaderUniform::MAT4, "model");
+    shader->add_uniform(ShaderUniform::MAT4, "view");
+    shader->add_uniform(ShaderUniform::MAT4, "mvp");
+
+    shader->add_attribute(ShaderAttribute::POSITION, "position");
+    shader->add_attribute(ShaderAttribute::NORMAL, "normal");
+
+    shader->bind_uniforms_and_attributes();
+
+    ObjectMesh tree(shader, new Mesh("assets/meshes/tree.mesh"));
+
+    PerlinNoiseGenerator pn(10.0f, 10.5f, 5, 2763226322);
+    for(unsigned int i=0; i<5; i++) {
+        float x = (pn.get_perlin_noise(i) - 1.0f);
+
+        this->trees.push_back(tree);
+        this->trees.back().set_position(glm::vec3(((float)i - 2.0f)* 10 + x, 0, 5.0f));
+        this->trees.back().static_load();
     }
 }
 
