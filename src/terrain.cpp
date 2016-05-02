@@ -142,15 +142,16 @@ void Terrain::generate_terrain(Mesh* mesh) {
     }
 
     colors.resize(indices.size());
+    const glm::vec3 base_color = glm::vec3(53.f / 255.f, 51.f / 255.f, 48.f / 255.f);
     for(unsigned int i=0; i<indices.size(); i+=3) {
-        glm::vec3 col = glm::vec3(0,0,0);
-        col += glm::vec3(1.0f) * (float)std::sin(positions[i][2] / 50.0f * M_PI / 2.f);
-        col += glm::vec3(1.0f) * (float)std::sin(positions[i+1][2] / 50.0f* M_PI / 2.f);
-        col += glm::vec3(1.0f) * (float)std::sin(positions[i+2][2] / 50.0f * M_PI / 2.f);
+        PerlinNoiseGenerator pn(10.0f, 10.5f, 5, 2763226322);
+        float c = (pn.get_perlin_noise(i) - 1.0) / 30.0f;
 
-        colors[i] = col / 3.0f;
-        colors[i+1] = col / 3.0f;
-        colors[i+2] = col / 3.0f;
+        glm::vec3 mod = glm::vec3(1.0f) * c;
+
+        colors[i] = base_color + mod;
+        colors[i+1] = base_color + mod;
+        colors[i+2] = base_color + mod;
     }
 
     mesh->set_indices(indices);

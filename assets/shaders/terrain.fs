@@ -26,7 +26,7 @@ void main() {
     float cosAlpha = clamp(dot(e,r), 0, 1);
 
     vec3 light_color = vec3(1,1,1);
-    float lightpower = .5;
+    float lightpower = 1.0f;
 
     float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
     vec3 color = color0;
@@ -35,5 +35,5 @@ void main() {
     vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
     vec3 final_color = diffuse + specular;
 
-    fragColor = ambient + vec4(final_color, 0.0);
+    fragColor = vec4(diffuse, 1.0f); //ambient + vec4(final_color, 0.0);
 }
