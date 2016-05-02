@@ -31,6 +31,7 @@ class Mesh {
 private:
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colors;
     std::vector<glm::vec2> texture_coordinates;
     std::vector<unsigned int> indices;
 
@@ -42,13 +43,16 @@ public:
     void set_indices(const std::vector<unsigned int>& _indices);
     void set_positions(const std::vector<glm::vec3>& _positions);
     void set_normals(const std::vector<glm::vec3>& _normals);
+    void set_colors(const std::vector<glm::vec3>& _normals);
 
     unsigned int get_nr_indices() const;
     unsigned int get_nr_positions() const;
     unsigned int get_nr_normals() const;
+    unsigned int get_nr_colors() const;
 
     const glm::vec3* get_positions_start() const;
     const glm::vec3* get_normals_start() const;
+    const glm::vec3* get_colors_start() const;
     const glm::vec2* get_texture_coordinates_start() const;
 
     const unsigned int* get_indices_start() const;

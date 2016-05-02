@@ -26,7 +26,7 @@
 
 class Terrain {
 private:
-    ObjectMesh* ter;                //!< objects representing the map
+    ObjectColoredMesh* ter;                //!< objects representing the map
 
     unsigned int width;             //!< width of the map in units
     unsigned int height;            //!< height of the map in units

@@ -86,7 +86,7 @@ const glm::vec3& Camera::get_position() const {
  * @return      camera instance
  */
 Camera::Camera() {
-    this->position = glm::vec3(0.0, 150.0, 150.0);
+    this->position = glm::vec3(0.0, 50.0, 50.0);
     this->m_aspect = 1.0f;
     this->view = glm::mat4(1.0f);
     this->projection = glm::mat4(1.0f);

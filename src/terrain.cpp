@@ -28,8 +28,8 @@
  * @return      void
  */
 Terrain::Terrain() {
-    this->width = 200;
-    this->height = 200;
+    this->width = 50;
+    this->height = 50;
     this->sample_interval = 10;
 
     Shader* shader = new Shader("assets/shaders/terrain");
@@ -40,6 +40,7 @@ Terrain::Terrain() {
 
     shader->add_attribute(ShaderAttribute::POSITION, "position");
     shader->add_attribute(ShaderAttribute::NORMAL, "normal");
+    shader->add_attribute(ShaderAttribute::COLOR, "colors");
 
     shader->bind_uniforms_and_attributes();
 
@@ -47,7 +48,7 @@ Terrain::Terrain() {
     this->generate_terrain(mesh);
     mesh->center();
 
-    this->ter = new ObjectMesh(shader, mesh);
+    this->ter = new ObjectColoredMesh(shader, mesh);
     this->ter->static_load();
 }
 
@@ -75,15 +76,16 @@ void Terrain::generate_terrain(Mesh* mesh) {
     // generate terrain
     this->generate_height_map();
 
-    std::vector<unsigned int> indices;
-    std::vector<glm::vec3> positions;
+    std::vector<unsigned int> indices_eff;
+    std::vector<glm::vec3> positions_eff;
+    std::vector<glm::vec3> colors_eff;
 
     for(unsigned int j=0; j<= this->height; j++) {
         for(unsigned int i=0; i<= this->width; i++) {
             // create positions
             float x = (float)i;
             float y = (float)j;
-            positions.push_back(glm::vec3(x, y, this->heights[j * (this->width + 1) + i]));
+            positions_eff.push_back(glm::vec3(x, y, this->heights[j * (this->width + 1) + i]));
 
             // create indices
             if(i != this->width && j != this->height) {
@@ -92,25 +94,26 @@ void Terrain::generate_terrain(Mesh* mesh) {
                 unsigned int i3 = (j + 1) * (this->width + 1) + i + 1;
                 unsigned int i4 = (j + 1) * (this->width + 1) + i;
 
-                indices.push_back(i1);
-                indices.push_back(i2);
-                indices.push_back(i4);
+                indices_eff.push_back(i1);
+                indices_eff.push_back(i2);
+                indices_eff.push_back(i4);
 
-                indices.push_back(i2);
-                indices.push_back(i3);
-                indices.push_back(i4);
+                indices_eff.push_back(i2);
+                indices_eff.push_back(i3);
+                indices_eff.push_back(i4);
             }
         }
     }
 
     // calculate normals
-    std::vector<glm::vec3> normals;
-    normals.resize(positions.size(), glm::vec3(0,0,0));
+    std::vector<glm::vec3> normals_eff;
+    normals_eff.resize(positions_eff.size(), glm::vec3(0,0,0));
+    colors_eff.resize(positions_eff.size(), glm::vec3(0,0,0));
 
-    for(unsigned int i=0; i<indices.size(); i+=3) {
-        glm::vec3 v1 = positions[indices[i]];
-        glm::vec3 v2 = positions[indices[i+1]];
-        glm::vec3 v3 = positions[indices[i+2]];
+    for(unsigned int i=0; i<indices_eff.size(); i+=3) {
+        glm::vec3 v1 = positions_eff[indices_eff[i]];
+        glm::vec3 v2 = positions_eff[indices_eff[i+1]];
+        glm::vec3 v3 = positions_eff[indices_eff[i+2]];
 
         glm::vec3 d1 = v2 - v1;
         glm::vec3 d2 = v3 - v1;
@@ -118,18 +121,42 @@ void Terrain::generate_terrain(Mesh* mesh) {
         glm::vec3 n = glm::cross(d1, d2);
         n = glm::normalize(n);
 
-        normals[indices[i]] += n;
-        normals[indices[i+1]] += n;
-        normals[indices[i+2]] += n;
+        normals_eff[indices_eff[i]] += n;
+        normals_eff[indices_eff[i+1]] += n;
+        normals_eff[indices_eff[i+2]] += n;
     }
 
-    for(unsigned int i=0; i<normals.size(); i++) {
-        normals[i]= glm::normalize(normals[i]);
+    for(unsigned int i=0; i<normals_eff.size(); i++) {
+        normals_eff[i]= glm::normalize(normals_eff[i]);
+    }
+
+    std::vector<unsigned int> indices;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colors;
+
+    for(unsigned int i=0; i<indices_eff.size(); i++) {
+        indices.push_back(i);
+        positions.push_back(positions_eff[indices_eff[i]]);
+        normals.push_back(normals_eff[indices_eff[i]]);
+    }
+
+    colors.resize(indices.size());
+    for(unsigned int i=0; i<indices.size(); i+=3) {
+        glm::vec3 col = glm::vec3(0,0,0);
+        col += glm::vec3(1.0f) * (float)std::sin(positions[i][2] / 50.0f * M_PI / 2.f);
+        col += glm::vec3(1.0f) * (float)std::sin(positions[i+1][2] / 50.0f* M_PI / 2.f);
+        col += glm::vec3(1.0f) * (float)std::sin(positions[i+2][2] / 50.0f * M_PI / 2.f);
+
+        colors[i] = col / 3.0f;
+        colors[i+1] = col / 3.0f;
+        colors[i+2] = col / 3.0f;
     }
 
     mesh->set_indices(indices);
     mesh->set_positions(positions);
     mesh->set_normals(normals);
+    mesh->set_colors(colors);
 }
 
 /**
@@ -140,7 +167,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
  * @return      void
  */
 void Terrain::generate_height_map() {
-    PerlinNoiseGenerator pn(1.0f, 1.2f, 5, 2763226322);
+    PerlinNoiseGenerator pn(0.7f, 1.2f, 5, 2763226322);
     this->heights.resize((this->width + 1) * (this->height + 1), 0.0);
     for(unsigned int j=0; j<= this->height; j+=this->sample_interval) {
         for(unsigned int i=0; i<= this->width; i+=this->sample_interval) {

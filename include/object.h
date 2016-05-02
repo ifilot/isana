@@ -118,4 +118,25 @@ private:
     GLuint m_vertex_array_buffers[NUM_BUFFERS];
 };
 
+class ObjectColoredMesh : public Object {
+public:
+    ObjectColoredMesh(Shader* shader, const Mesh* _mesh);
+
+    void draw();
+    void static_load();
+private:
+
+    enum {
+        POSITION_VB,
+        NORMAL_VB,
+        COLOR_VB,
+        INDICES_VB,
+
+        NUM_BUFFERS
+    };
+
+    GLuint m_vertex_array_object;
+    GLuint m_vertex_array_buffers[NUM_BUFFERS];
+};
+
 #endif //_OBJECT_H

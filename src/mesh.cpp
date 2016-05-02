@@ -33,10 +33,11 @@ void Mesh::set_indices(const std::vector<unsigned int>& _indices) {
 }
 
 void Mesh::set_positions(const std::vector<glm::vec3>& _positions) {
-    this->positions.resize(_positions.size(), glm::vec3(0,0,0));
-    for(unsigned int i=0; i<_positions.size(); i++) {
-        this->positions[i] = _positions[i];
-    }
+    this->positions = _positions;
+}
+
+void Mesh::set_colors(const std::vector<glm::vec3>& _colors) {
+    this->colors = _colors;
 }
 
 void Mesh::set_normals(const std::vector<glm::vec3>& _normals) {
@@ -55,12 +56,20 @@ unsigned int Mesh::get_nr_normals() const {
     return this->normals.size();
 }
 
+unsigned int Mesh::get_nr_colors() const {
+    return this->colors.size();
+}
+
 const glm::vec3* Mesh::get_positions_start() const {
     return &this->positions[0];
 }
 
 const glm::vec3* Mesh::get_normals_start() const {
     return &this->normals[0];
+}
+
+const glm::vec3* Mesh::get_colors_start() const {
+    return &this->colors[0];
 }
 
 const glm::vec2* Mesh::get_texture_coordinates_start() const {
