@@ -45,6 +45,10 @@ public:
         this->scale = _scale;
     }
 
+    inline void set_rotation_matrix(const glm::mat4& _rotation) {
+        this->rotation = _rotation;
+    }
+
     inline const glm::vec3& get_position() const {
         return this->position;
     }
@@ -55,6 +59,7 @@ protected:
 
     glm::mat4 model;
     glm::mat4 scale;
+    glm::mat4 rotation;
     glm::vec3 position;
 };
 

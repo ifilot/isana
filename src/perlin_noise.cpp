@@ -25,19 +25,27 @@ PerlinNoiseGenerator::PerlinNoiseGenerator(double _a, double _b, unsigned int _i
     this->b = _b;
     this->itr = _itr;
     this->seed = _seed;
+
+    this->generator.seed(uint32_t(this->seed));
 }
 
 double PerlinNoiseGenerator::get_perlin_noise(int x) {
     double sum = 0.0;
     for(unsigned int i=0; i < this->itr; i++) {
-        sum += this->noise2(std::pow(this->b, (double)i) * x) /
+        sum += this->noise(std::pow(this->b, (double)i) * x) /
                             std::pow(this->a, (double)i);
     }
 
     return sum;
 }
 
-double PerlinNoiseGenerator::noise2(double x) {
+double PerlinNoiseGenerator::get_random_number() {
+    boost::uniform_real<> dist(0.0, 1.0);
+    boost::variate_generator<boost::mt19937&, boost::uniform_real<> >die(this->generator, dist);
+    return die();
+}
+
+double PerlinNoiseGenerator::noise(double x) {
    boost::random::mt19937 rng;
    rng.seed(uint32_t(this->seed - x));
    boost::uniform_real<> dist(0.0, 1.0);

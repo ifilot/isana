@@ -25,7 +25,6 @@ Mesh::Mesh() {
 
 Mesh::Mesh(const std::string& filename) {
     this->load_mesh_from_file(filename);
-    this->center();
 }
 
 void Mesh::set_indices(const std::vector<unsigned int>& _indices) {

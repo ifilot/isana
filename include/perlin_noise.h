@@ -32,14 +32,17 @@ public:
 
     double get_perlin_noise(int x);
 
+    double get_random_number();
+
 private:
     unsigned int itr;
     unsigned int seed;
     double a;
     double b;
 
-    double noise2(double x);
+    boost::random::mt19937 generator;
 
+    double noise(double x);
 };
 
 #endif //_PERLIN_NOISE_H

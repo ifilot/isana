@@ -125,6 +125,8 @@ private:
      */
     unsigned int idx(unsigned int i, unsigned int j);
 
+    float get_height(float x, float y);
+
     Terrain(Terrain const&)          = delete;
     void operator=(Terrain const&)  = delete;
 };

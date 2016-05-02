@@ -169,14 +169,6 @@ Visualizer::Visualizer():
  * @return Game class
  */
 void Visualizer::update(double dt) {
-    float angle = dt;
-
-    glm::mat4 rot = glm::rotate(angle, glm::vec3(0,0,1));
-
-    glm::vec3 position = Camera::get().get_position();
-    glm::vec3 pos = glm::vec3(rot * glm::vec4(position, 1.0));
-
-    Camera::get().set_position(pos);
 }
 
 void Visualizer::draw() {

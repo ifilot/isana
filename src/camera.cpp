@@ -37,7 +37,7 @@ void Camera::update() {
 glm::mat4 Camera::get_view() {
     this->view = glm::lookAt(
                     this->position,              // cam pos
-                    glm::vec3(0.0, 0.0, 0.0),    // look at
+                    glm::vec3(25.0, 25.0, 0.0),    // look at
                     glm::vec3(0.0f, 0.0f ,1.0f)  // up
                 );
 
@@ -86,7 +86,7 @@ const glm::vec3& Camera::get_position() const {
  * @return      camera instance
  */
 Camera::Camera() {
-    this->position = glm::vec3(0.0, 50.0, 50.0);
+    this->position = glm::vec3(0.0, 0.0, 50.0);
     this->m_aspect = 1.0f;
     this->view = glm::mat4(1.0f);
     this->projection = glm::mat4(1.0f);

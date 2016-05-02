@@ -61,7 +61,7 @@ void ObjectTexturedMesh::draw() {
 
     glm::mat4 view = Camera::get().get_view();
     glm::mat4 projection = Camera::get().get_projection();
-    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->scale;
+    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * this->model;
 
     this->shader->set_uniform(0, &this->model[0][0]);
@@ -168,7 +168,7 @@ void ObjectLines::draw() {
 
     glm::mat4 view = Camera::get().get_view();
     glm::mat4 projection = Camera::get().get_projection();
-    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->scale;
+    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * this->model;
 
     this->shader->set_uniform(0, &this->model[0][0]);
@@ -247,7 +247,7 @@ void ObjectMesh::draw() {
 
     glm::mat4 view = Camera::get().get_view();
     glm::mat4 projection = Camera::get().get_projection();
-    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->scale;
+    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * this->model;
 
     this->shader->set_uniform(0, &this->model[0][0]);
@@ -339,7 +339,7 @@ void ObjectColoredMesh::draw() {
 
     glm::mat4 view = Camera::get().get_view();
     glm::mat4 projection = Camera::get().get_projection();
-    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->scale;
+    this->model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * this->model;
 
     this->shader->set_uniform(0, &this->model[0][0]);

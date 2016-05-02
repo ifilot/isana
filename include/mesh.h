@@ -19,9 +19,10 @@
 #**************************************************************************/
 
 #include <vector>
-#include <glm/glm.hpp>
 #include <fstream>
+#include <iostream>
 #include <string>
+#include <glm/glm.hpp>
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>

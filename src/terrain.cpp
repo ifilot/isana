@@ -46,7 +46,6 @@ Terrain::Terrain() {
 
     Mesh* mesh = new Mesh();
     this->generate_terrain(mesh);
-    mesh->center();
 
     this->ter = new ObjectColoredMesh(shader, mesh);
     this->ter->static_load();
@@ -251,7 +250,7 @@ void Terrain::generate_height_map() {
             double xx = double(i % this->sample_interval) / (double)this->sample_interval;
             double yy = double(j % this->sample_interval) / (double)this->sample_interval;
 
-            this->heights[j * (this->width + 1) + i] = this->bicubic_interpolate(p, xx, yy);
+            this->heights[this->idx(i,j)] = this->bicubic_interpolate(p, xx, yy);
         }
     }
 }
@@ -271,11 +270,14 @@ void Terrain::generate_trees() {
     ObjectMesh tree(shader, new Mesh("assets/meshes/tree.mesh"));
 
     PerlinNoiseGenerator pn(10.0f, 10.5f, 5, 2763226322);
-    for(unsigned int i=0; i<5; i++) {
-        float x = (pn.get_perlin_noise(i) - 1.0f);
+    for(unsigned int i=0; i<50; i++) {
+        float x = pn.get_random_number() * (float)this->width;
+        float y = pn.get_random_number() * (float)this->height;
+        float angle = pn.get_random_number() * 2.0f * M_PI;
 
         this->trees.push_back(tree);
-        this->trees.back().set_position(glm::vec3(((float)i - 2.0f)* 10 + x, 0, 5.0f));
+        this->trees.back().set_position(glm::vec3(x, y, this->get_height(x,y)));
+        this->trees.back().set_rotation_matrix(glm::rotate(angle, glm::vec3(0,0,1)));
         this->trees.back().static_load();
     }
 }
@@ -323,4 +325,32 @@ double Terrain::bicubic_interpolate (double p[4][4], double x, double y) {
  */
 unsigned int Terrain::idx(unsigned int i, unsigned int j) {
     return i + (this->width + 1) * j;
+}
+
+float Terrain::get_height(float x, float y) {
+    // cast x and y to nearest coordinates
+    unsigned int i = (unsigned int)x;
+    unsigned int j = (unsigned int)y;
+
+    float modx = fmod(x, 1.0f);
+    float mody = fmod(y, 1.0f);
+
+    glm::vec3 p1, p2, p3;
+    if(mody > 1.0f - modx) { // right top
+        p1 = glm::vec3((float)i+1, (float)j, this->heights[this->idx(i+1, j)]);
+        p2 = glm::vec3((float)i+1, (float)j+1, this->heights[this->idx(i+1, j+1)]);
+        p3 = glm::vec3((float)i, (float)j+1, this->heights[this->idx(i, j+1)]);
+    } else {
+        p1 = glm::vec3((float)i, (float)j, this->heights[this->idx(i, j)]);
+        p2 = glm::vec3((float)i+1, (float)j, this->heights[this->idx(i+1, j)]);
+        p3 = glm::vec3((float)i, (float)j+1, this->heights[this->idx(i, j+1)]);
+    }
+
+    glm::vec3 d1 = p2 - p1;
+    glm::vec3 d2 = p3 - p1;
+    glm::vec3 n = glm::cross(d1, d2);
+
+    float height = glm::dot((p1 - glm::vec3(x, y, 0.0f)), n) / glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), n);
+
+    return height;
 }
