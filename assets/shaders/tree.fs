@@ -35,5 +35,5 @@ void main() {
     vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
     vec3 final_color = diffuse + specular;
 
-    fragColor = ambient + vec4(final_color, 0.0);
+    fragColor = ambient;// + vec4(final_color, 0.0);
 }

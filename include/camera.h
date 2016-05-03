@@ -96,11 +96,18 @@ private:
      */
     Camera();
 
-    glm::mat4 projection;   /*<** perspective matrix >*/
-    glm::mat4 view;         /*<** view matrix >*/
-    glm::vec3 position;     /*<** position of the camera>*/
+    glm::mat4 projection;   //!< perspective matrix
+    glm::mat4 view;         //!< view matrix
 
-    float m_aspect;         /*<** aspect ratio of the window>*/
+    float distance;         //!< distance of the camera with respect to looking position
+    float angle;            //!< rotation angle
+
+    glm::vec3 position;     //!< position of the camera
+    glm::vec3 look_at;      //!< looking position
+
+    float m_aspect;         //!< aspect ratio of the window
+
+    void calculate_position();
 
     Camera(Camera const&)          = delete;
     void operator=(Camera const&)  = delete;

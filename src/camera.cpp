@@ -35,10 +35,12 @@ void Camera::update() {
  * @return      view matrix
  */
 glm::mat4 Camera::get_view() {
+    this->calculate_position();
+
     this->view = glm::lookAt(
                     this->position,              // cam pos
-                    glm::vec3(25.0, 25.0, 0.0),    // look at
-                    glm::vec3(0.0f, 0.0f ,1.0f)  // up
+                    this->look_at,               // look at
+                    glm::vec3(0.0f, 0.0f, 1.0f)  // up
                 );
 
     return view;
@@ -80,13 +82,24 @@ const glm::vec3& Camera::get_position() const {
     return this->position;
 }
 
+void Camera::calculate_position() {
+    glm::vec3 cam_vec(std::sin(this->angle), std::cos(this->angle), std::sin(M_PI / 4.0));
+    cam_vec *= this->distance;
+    this->position = this->look_at + cam_vec;
+}
+
 /**
  * @brief       camera constructor
  *
  * @return      camera instance
  */
 Camera::Camera() {
-    this->position = glm::vec3(0.0, 0.0, 50.0);
+    this->look_at = glm::vec3(25.0f, 25.0f, 0.0f);
+    this->angle = 0.0f * 2.0f * M_PI; // orient to south
+    this->distance = 50.0f;
+
+    this->calculate_position();
+
     this->m_aspect = 1.0f;
     this->view = glm::mat4(1.0f);
     this->projection = glm::mat4(1.0f);
