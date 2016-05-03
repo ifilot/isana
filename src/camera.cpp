@@ -82,8 +82,15 @@ const glm::vec3& Camera::get_position() const {
     return this->position;
 }
 
+/**
+ * @brief       calculate the position of the camera from the angle and orientation
+ *
+ * @return      void
+ */
 void Camera::calculate_position() {
-    glm::vec3 cam_vec(std::sin(this->angle), std::cos(this->angle), std::sin(M_PI / 4.0));
+    glm::vec3 cam_vec(std::sin(this->angle),
+                      std::cos(this->angle),
+                      std::sin(60.0f * 2.0f * M_PI / 360.0f));
     cam_vec *= this->distance;
     this->position = this->look_at + cam_vec;
 }

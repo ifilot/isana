@@ -26,7 +26,7 @@ void main() {
     float cosAlpha = clamp(dot(e,r), 0, 1);
 
     vec3 light_color = vec3(1,1,1);
-    float lightpower = 1.0f;
+    float lightpower = 0.2f;
 
     float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
     vec3 color = color0;

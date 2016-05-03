@@ -88,6 +88,36 @@ public:
      */
     void set_aspect_ratio(const float& aspect_ratio);
 
+    inline void pan_left() {
+        this->look_at -= glm::vec3(-1, 0, 0);
+    }
+
+    inline void pan_right() {
+        this->look_at -= glm::vec3(1, 0, 0);
+    }
+
+    inline void pan_up() {
+        this->look_at -= glm::vec3(0, 1, 0);
+    }
+
+    inline void pan_down() {
+        this->look_at -= glm::vec3(0, -1, 0);
+    }
+
+    inline void angle_cw() {
+        this->angle -= 0.1f;
+        if(this->angle < 2.0f * M_PI) {
+            this->angle += 2.0f * M_PI;
+        }
+    }
+
+    inline void angle_ccw() {
+        this->angle += 0.1f;
+        if(this->angle > 2.0f * M_PI) {
+            this->angle -= 2.0f * M_PI;
+        }
+    }
+
 private:
     /**
      * @brief       camera constructor

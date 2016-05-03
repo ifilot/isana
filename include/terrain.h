@@ -24,7 +24,6 @@
 #include "perlin_noise.h"
 #include "object.h"
 
-
 /**
  * @brief      single triangle in terrain object
  */
@@ -33,6 +32,10 @@ private:
     glm::vec3 p1;
     glm::vec3 p2;
     glm::vec3 p3;
+
+    glm::vec3 n1;
+    glm::vec3 n2;
+    glm::vec3 n3;
 
     glm::vec3 normal;
     glm::vec3 color;
@@ -46,7 +49,8 @@ public:
      * @param[in]  _p2   vector p2
      * @param[in]  _p3   vector p3
      */
-    TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, const glm::vec3& _p3);
+    TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, const glm::vec3& _p3,
+                    const glm::vec3& _n1, const glm::vec3& _n2, const glm::vec3& _n3);
 
     /**
      * @brief      Set the color.
@@ -84,6 +88,35 @@ public:
      */
     inline const glm::vec3& get_p3() const {
         return this->p3;
+    }
+
+    /**
+     * @brief      get n1
+     *
+     * @return     n1
+     */
+    inline const glm::vec3& get_n1() const {
+        return this->n1;
+    }
+
+
+    /**
+     * @brief      get n2
+     *
+     * @return     n2
+     */
+    inline const glm::vec3& get_n2() const {
+        return this->n2;
+    }
+
+
+    /**
+     * @brief      get ne
+     *
+     * @return     n3
+     */
+    inline const glm::vec3& get_n3() const {
+        return this->n3;
     }
 
 

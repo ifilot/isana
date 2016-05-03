@@ -23,11 +23,12 @@ void main() {
     //position of the vertex in world_space
     position_worldspace = (model * vec4(position, 1.0)).xyz;
 
-    vec3 position_cameraspace = (view * vec4(position, 1.0)).xyz;
+    vec3 position_cameraspace = (view * model * vec4(position, 1.0)).xyz;
     eye_cameraspace = vec3(0,0,0) - position_cameraspace;
 
-    vec3 light_cameraspace = (view * vec4(100, 0, 0, 1.0)).xyz;
+    vec3 light_worldspace = vec3(25, 25, 100);
+    vec3 light_cameraspace = (view * vec4(light_worldspace, 1.0)).xyz;
     lightdirection_cameraspace = light_cameraspace + eye_cameraspace;
 
-    normal_cameraspace = (view * model * vec4(normal, 1.0)).xyz;
+    normal_cameraspace = (view * model * vec4(normal, 0)).xyz;
 }

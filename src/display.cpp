@@ -104,7 +104,7 @@ Display::Display() {
  * Perform these instructions at the start of each frame
  */
 void Display::open_frame() {
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::get().update();
 }

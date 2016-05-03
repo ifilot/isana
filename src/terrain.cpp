@@ -27,10 +27,15 @@
  * @param[in]  _p2   vector p2
  * @param[in]  _p3   vector p3
  */
-TerrainTriangle::TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, const glm::vec3& _p3) {
+TerrainTriangle::TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, const glm::vec3& _p3,
+                                 const glm::vec3& _n1, const glm::vec3& _n2, const glm::vec3& _n3) {
     this->p1 = _p1;
     this->p2 = _p2;
     this->p3 = _p3;
+
+    this->n1 = _n1;
+    this->n2 = _n2;
+    this->n3 = _n3;
 
     this->color = glm::vec3(0,0,0);
 
@@ -124,6 +129,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
 
     std::vector<unsigned int> indices_eff;
     std::vector<glm::vec3> positions_eff;
+    std::vector<glm::vec3> normals_eff;
 
     for(unsigned int j=0; j<= this->height; j++) {
         for(unsigned int i=0; i<= this->width; i++) {
@@ -150,12 +156,36 @@ void Terrain::generate_terrain(Mesh* mesh) {
         }
     }
 
+    normals_eff.resize(positions_eff.size(), glm::vec3(0,0,0));
+    for(unsigned int i=0; i<indices_eff.size(); i+=3) {
+        glm::vec3 v1 = positions_eff[indices_eff[i]];
+        glm::vec3 v2 = positions_eff[indices_eff[i+1]];
+        glm::vec3 v3 = positions_eff[indices_eff[i+2]];
+
+        glm::vec3 d1 = v2 - v1;
+        glm::vec3 d2 = v3 - v1;
+
+        glm::vec3 n = glm::cross(d1, d2);
+        n = glm::normalize(n);
+
+        normals_eff[indices_eff[i]] += n;
+        normals_eff[indices_eff[i+1]] += n;
+        normals_eff[indices_eff[i+2]] += n;
+    }
+
+    for(unsigned int i=0; i<normals_eff.size(); i++) {
+        normals_eff[i]= glm::normalize(normals_eff[i]);
+    }
+
     PerlinNoiseGenerator pn(0.7f, 1.2f, 5, 2763226322);
     for(unsigned int i=0; i<indices_eff.size(); i+=3) {
         this->triangles.push_back(TerrainTriangle(positions_eff[indices_eff[i+0]],
                                                   positions_eff[indices_eff[i+1]],
-                                                  positions_eff[indices_eff[i+2]]));
-        this->triangles.back().set_color(glm::vec3(156.f / 255.f, 112.f / 255.f, 105.f / 255.f) +
+                                                  positions_eff[indices_eff[i+2]],
+                                                  normals_eff[indices_eff[i+0]],
+                                                  normals_eff[indices_eff[i+1]],
+                                                  normals_eff[indices_eff[i+2]]));
+        this->triangles.back().set_color(glm::vec3(161.f / 255.f, 102.f / 255.f, 62.f / 255.f) +
                                          glm::vec3(1.0f) * (float)pn.get_random_number() * 0.05f);
     }
 
@@ -173,9 +203,9 @@ void Terrain::generate_terrain(Mesh* mesh) {
         positions.push_back(this->triangles[i].get_p2());
         positions.push_back(this->triangles[i].get_p3());
 
-        normals.push_back(this->triangles[i].get_normal());
-        normals.push_back(this->triangles[i].get_normal());
-        normals.push_back(this->triangles[i].get_normal());
+        normals.push_back(this->triangles[i].get_n1());
+        normals.push_back(this->triangles[i].get_n2());
+        normals.push_back(this->triangles[i].get_n3());
 
         colors.push_back(this->triangles[i].get_color());
         colors.push_back(this->triangles[i].get_color());
@@ -362,9 +392,9 @@ float Terrain::get_height(float x, float y) {
     float mody = fmod(y, 1.0f);
 
     if(mody > 1.0f - modx) { // right top
-        return this->triangles[2 * this->idx(i,j) + 1].get_height(x,y);
+        return this->triangles[i * 2 + j * width * 2 + 1].get_height(x,y);
     } else {
-        return this->triangles[2 * this->idx(i,j)].get_height(x,y);
+        return this->triangles[i * 2 + j * width * 2].get_height(x,y);
     }
 }
 

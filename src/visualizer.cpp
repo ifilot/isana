@@ -114,6 +114,30 @@ void Visualizer::handle_key_down(const int& key, const int& scancode, const int&
     if(key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 
     }
+
+    if(key == 'A') {
+        Camera::get().pan_left();
+    }
+
+    if(key == 'D') {
+        Camera::get().pan_right();
+    }
+
+    if(key == 'S') {
+        Camera::get().pan_down();
+    }
+
+    if(key == 'W') {
+        Camera::get().pan_up();
+    }
+
+    if(key == 'Q') {
+        Camera::get().angle_ccw();
+    }
+
+    if(key == 'E') {
+        Camera::get().angle_cw();
+    }
 }
 
 /**
