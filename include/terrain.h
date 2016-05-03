@@ -24,18 +24,120 @@
 #include "perlin_noise.h"
 #include "object.h"
 
+
+/**
+ * @brief      single triangle in terrain object
+ */
+class TerrainTriangle {
+private:
+    glm::vec3 p1;
+    glm::vec3 p2;
+    glm::vec3 p3;
+
+    glm::vec3 normal;
+    glm::vec3 color;
+
+public:
+
+    /**
+     * @brief      TerrainTriangle constructor
+     *
+     * @param[in]  _p1   vector p1
+     * @param[in]  _p2   vector p2
+     * @param[in]  _p3   vector p3
+     */
+    TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, const glm::vec3& _p3);
+
+    /**
+     * @brief      Set the color.
+     *
+     * @param[in]  _color  color
+     */
+    inline void set_color(const glm::vec3& _color) {
+        this->color = _color;
+    }
+
+    /**
+     * @brief      get p1
+     *
+     * @return     p1
+     */
+    inline const glm::vec3& get_p1() const {
+        return this->p1;
+    }
+
+
+    /**
+     * @brief      get p2
+     *
+     * @return     p2
+     */
+    inline const glm::vec3& get_p2() const {
+        return this->p2;
+    }
+
+
+    /**
+     * @brief      get pe
+     *
+     * @return     p3
+     */
+    inline const glm::vec3& get_p3() const {
+        return this->p3;
+    }
+
+
+    /**
+     * @brief      Get the color.
+     *
+     * @return     color.
+     */
+    inline const glm::vec3& get_color() const {
+        return this->color;
+    }
+
+
+    /**
+     * @brief      Get the normal.
+     *
+     * @return     Normal.
+     */
+    inline const glm::vec3& get_normal() const {
+        return this->normal;
+    }
+
+
+    /**
+     * @brief      Get the height.
+     *
+     * @param[in]  x     global x coordinate
+     * @param[in]  y     global y coordinate
+     *
+     * @return     Height.
+     */
+    float get_height(float x, float y) const;
+
+private:
+
+    /**
+     * @brief      Calculate the normal vector
+     */
+    void calculate_normal();
+};
+
 class Terrain {
 private:
-    ObjectColoredMesh* ter;                //!< objects representing the map
+    ObjectColoredMesh* ter;                 //!< objects representing the map
 
-    std::vector<ObjectMesh> trees;
+    std::vector<ObjectMesh> trees;          //!< vector holding all trees on the terrain
 
-    unsigned int width;             //!< width of the map in units
-    unsigned int height;            //!< height of the map in units
+    unsigned int width;                     //!< width of the map in units
+    unsigned int height;                    //!< height of the map in units
 
-    unsigned int sample_interval;   //!< sample interval for the height map
+    unsigned int sample_interval;           //!< sample interval for the height map
 
-    std::vector<float> heights;     //!< height map
+    std::vector<TerrainTriangle> triangles; //!< vector holding all terrain triangles
+    std::vector<float> heights;             //!< height map
 
 public:
     /**
@@ -89,6 +191,9 @@ private:
      */
     void generate_height_map();
 
+    /**
+     * @brief      randomly generate tree objects
+     */
     void generate_trees();
 
     /**
@@ -114,6 +219,16 @@ private:
     double bicubic_interpolate (double p[4][4], double x, double y);
 
     /**
+     * @brief      Get the height.
+     *
+     * @param[in]  x     global coordinate x
+     * @param[in]  y     global coordinate y
+     *
+     * @return     Height.
+     */
+    float get_height(float x, float y);
+
+    /**
      * @fn          idx
      *
      * @brief       return the index of the height map
@@ -124,8 +239,6 @@ private:
      * @return      void
      */
     unsigned int idx(unsigned int i, unsigned int j);
-
-    float get_height(float x, float y);
 
     Terrain(Terrain const&)          = delete;
     void operator=(Terrain const&)  = delete;

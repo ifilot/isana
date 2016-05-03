@@ -28,7 +28,8 @@ void main() {
     float lightpower = 1.0f;
 
     float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
-    vec3 color = vec3(0.091, 0.061, 0.040);
+    //vec3 color = vec3(0.091, 0.061, 0.040);
+    vec3 color = vec3(112.f/255.f, 62.f/255.f, 17.f/255.f);
     vec4 ambient = vec4(color, 1.0);
     vec3 diffuse = vec3(ambient) * light_color * lightpower * cosTheta;
     vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
