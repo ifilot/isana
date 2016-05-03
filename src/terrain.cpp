@@ -226,7 +226,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
  * @return      void
  */
 void Terrain::generate_height_map() {
-    PerlinNoiseGenerator pn(0.7f, 1.2f, 5, 2763226322);
+    PerlinNoiseGenerator pn(1.0f, 1.2f, 5, 2763226322);
     this->heights.resize((this->width + 1) * (this->height + 1), 0.0);
     for(unsigned int j=0; j<= this->height; j+=this->sample_interval) {
         for(unsigned int i=0; i<= this->width; i+=this->sample_interval) {
@@ -338,6 +338,20 @@ void Terrain::generate_trees() {
         this->trees.back().set_rotation_matrix(glm::rotate(angle, glm::vec3(0,0,1)));
         this->trees.back().static_load();
     }
+    Shader* s = new Shader("assets/shaders/tree");
+    s->add_uniform(ShaderUniform::MAT4, "model");
+    s->add_uniform(ShaderUniform::MAT4, "view");
+    s->add_uniform(ShaderUniform::MAT4, "mvp");
+
+    s->add_attribute(ShaderAttribute::POSITION, "position");
+    s->add_attribute(ShaderAttribute::NORMAL, "normal");
+
+    s->bind_uniforms_and_attributes();
+    this->trees.push_back(ObjectMesh(s, new Mesh("assets/meshes/tent.mesh")));
+    this->trees.back().static_load();
+    float x = (float)this->width / 2.0f;
+    float y = (float)this->height / 2.0f;
+    this->trees.back().set_position(glm::vec3(x,y,this->get_height(x,y)));
 }
 
 /**
