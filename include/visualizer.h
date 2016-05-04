@@ -26,6 +26,7 @@
 #include "display.h"
 #include "shader.h"
 #include "terrain.h"
+#include "objects_engine.h"
 
 /**
  * @class Visualizer class

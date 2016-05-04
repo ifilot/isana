@@ -181,6 +181,7 @@ Visualizer::Visualizer():
     Display::get();
 
     // add objects
+    ObjectsEngine::get();
 }
 
 /**
@@ -197,4 +198,5 @@ void Visualizer::update(double dt) {
 
 void Visualizer::draw() {
     Terrain::get().draw();
+    ObjectsEngine::get().draw();
 }

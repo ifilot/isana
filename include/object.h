@@ -33,7 +33,6 @@ public:
     Object(Shader* shader, const Mesh* _mesh);
 
     virtual void draw() = 0;
-    virtual void static_load() = 0;
 
     void parse_uniform(unsigned int id, const float* val);
 
@@ -68,7 +67,6 @@ public:
     ObjectTexturedMesh(Shader* shader, const Mesh* _mesh);
 
     void draw();
-    void static_load();
 private:
 
     enum {
@@ -108,7 +106,6 @@ public:
     ObjectMesh(Shader* shader, const Mesh* _mesh);
 
     void draw();
-    void static_load();
 private:
 
     enum {

@@ -50,7 +50,8 @@ CFLAGS += -I$(INCDIR) -I$(SRCDIR)
 
 # add here the source files for the compilation
 SOURCES = isana.cpp camera.cpp display.cpp visualizer.cpp object.cpp \
-shader.cpp texture_manager.cpp mesh.cpp terrain.cpp perlin_noise.cpp
+shader.cpp texture_manager.cpp mesh.cpp terrain.cpp perlin_noise.cpp \
+objects_engine.cpp
 
 _INCS = $(SOURCES:.cpp=.h)
 INCS = $(patsubst %,./include/%,$(_INCS))

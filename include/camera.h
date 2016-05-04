@@ -89,11 +89,11 @@ public:
     void set_aspect_ratio(const float& aspect_ratio);
 
     inline void pan_left() {
-        this->look_at -= glm::vec3(-1, 0, 0);
+        this->look_at -= glm::vec3(1, 0, 0);
     }
 
     inline void pan_right() {
-        this->look_at -= glm::vec3(1, 0, 0);
+        this->look_at -= glm::vec3(-1, 0, 0);
     }
 
     inline void pan_up() {

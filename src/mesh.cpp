@@ -186,3 +186,68 @@ void Mesh::center() {
         this->positions[i] -= center;
     }
 }
+
+void Mesh::static_load() {
+    // load the mesh into memory
+    unsigned int size = this->indices.size();
+
+    // generate a vertex array object and store it in the pointer
+    glGenVertexArrays(1, &this->m_vertex_array_object);
+    glBindVertexArray(this->m_vertex_array_object);
+
+    // generate a number of buffers (blocks of data on the GPU)
+    glGenBuffers(NUM_BUFFERS, this->m_vertex_array_buffers);
+
+    /*
+     * POSITIONS
+     */
+
+    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[POSITION_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ARRAY_BUFFER, this->positions.size() * 3 * sizeof(float), &this->positions[0][0], GL_STATIC_DRAW);
+
+    // specifies the generic vertex attribute of index 0 to be enabled
+    glEnableVertexAttribArray(0);
+    // define an array of generic vertex attribute data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    /*
+     * NORMALS
+     */
+
+    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ARRAY_BUFFER, this->normals.size() * 3 * sizeof(float), &this->normals[0][0], GL_STATIC_DRAW);
+
+    // specifies the generic vertex attribute of index 0 to be enabled
+    glEnableVertexAttribArray(1);
+    // define an array of generic vertex attribute data
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    /*
+     * INDICES_VB
+     */
+
+    // bind a buffer identified by INDICES_VB and interpret this buffer as an array
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertex_array_buffers[INDICES_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
+
+    // after this command, any commands that use a vertex array will
+    // no longer work
+    glBindVertexArray(0);
+}
+
+void Mesh::draw() const {
+    // load the vertex array
+    glBindVertexArray(m_vertex_array_object);
+
+    // draw the mesh using the indices
+    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+
+    // after this command, any commands that use a vertex array will
+    // no longer work
+    glBindVertexArray(0);
+}

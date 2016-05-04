@@ -18,11 +18,16 @@
 #                                                                         #
 #**************************************************************************/
 
+#ifndef _MESH_H
+#define _MESH_H
+
 #include <vector>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <glm/glm.hpp>
+#include <GL/glew.h>
+
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -58,6 +63,23 @@ public:
 
     const unsigned int* get_indices_start() const;
 
+    void static_load();
+    void draw() const;
+
 private:
     void load_mesh_from_file(const std::string& filename);
+
+    enum {
+        POSITION_VB,
+        NORMAL_VB,
+        INDICES_VB,
+
+        NUM_BUFFERS
+    };
+
+    GLuint m_vertex_array_object;
+    GLuint m_vertex_array_buffers[NUM_BUFFERS];
 };
+
+
+#endif //_MESH_H

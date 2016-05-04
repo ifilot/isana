@@ -313,45 +313,45 @@ void Terrain::generate_height_map() {
  * @brief      randomly generate tree objects
  */
 void Terrain::generate_trees() {
-    Shader* shader = new Shader("assets/shaders/tree");
+    // Shader* shader = new Shader("assets/shaders/tree");
 
-    shader->add_uniform(ShaderUniform::MAT4, "model");
-    shader->add_uniform(ShaderUniform::MAT4, "view");
-    shader->add_uniform(ShaderUniform::MAT4, "mvp");
+    // shader->add_uniform(ShaderUniform::MAT4, "model");
+    // shader->add_uniform(ShaderUniform::MAT4, "view");
+    // shader->add_uniform(ShaderUniform::MAT4, "mvp");
 
-    shader->add_attribute(ShaderAttribute::POSITION, "position");
-    shader->add_attribute(ShaderAttribute::NORMAL, "normal");
+    // shader->add_attribute(ShaderAttribute::POSITION, "position");
+    // shader->add_attribute(ShaderAttribute::NORMAL, "normal");
 
-    shader->bind_uniforms_and_attributes();
+    // shader->bind_uniforms_and_attributes();
 
-    ObjectMesh tree(shader, new Mesh("assets/meshes/tree.mesh"));
-    tree.set_scale_matrix(glm::scale(glm::vec3(.5,.5,.5)));
+    // ObjectMesh tree(shader, new Mesh("assets/meshes/tree.mesh"));
+    // tree.set_scale_matrix(glm::scale(glm::vec3(.5,.5,.5)));
 
-    PerlinNoiseGenerator pn(10.0f, 10.5f, 5, 2763226322);
-    for(unsigned int i=0; i<50; i++) {
-        float x = pn.get_random_number() * (float)this->width;
-        float y = pn.get_random_number() * (float)this->height;
-        float angle = pn.get_random_number() * 2.0f * M_PI;
+    // PerlinNoiseGenerator pn(10.0f, 10.5f, 5, 2763226322);
+    // for(unsigned int i=0; i<50; i++) {
+    //     float x = pn.get_random_number() * (float)this->width;
+    //     float y = pn.get_random_number() * (float)this->height;
+    //     float angle = pn.get_random_number() * 2.0f * M_PI;
 
-        this->trees.push_back(tree);
-        this->trees.back().set_position(glm::vec3(x, y, this->get_height(x,y)));
-        this->trees.back().set_rotation_matrix(glm::rotate(angle, glm::vec3(0,0,1)));
-        this->trees.back().static_load();
-    }
-    Shader* s = new Shader("assets/shaders/tree");
-    s->add_uniform(ShaderUniform::MAT4, "model");
-    s->add_uniform(ShaderUniform::MAT4, "view");
-    s->add_uniform(ShaderUniform::MAT4, "mvp");
+    //     this->trees.push_back(tree);
+    //     this->trees.back().set_position(glm::vec3(x, y, this->get_height(x,y)));
+    //     this->trees.back().set_rotation_matrix(glm::rotate(angle, glm::vec3(0,0,1)));
+    //     this->trees.back().static_load();
+    // }
+    // Shader* s = new Shader("assets/shaders/tree");
+    // s->add_uniform(ShaderUniform::MAT4, "model");
+    // s->add_uniform(ShaderUniform::MAT4, "view");
+    // s->add_uniform(ShaderUniform::MAT4, "mvp");
 
-    s->add_attribute(ShaderAttribute::POSITION, "position");
-    s->add_attribute(ShaderAttribute::NORMAL, "normal");
+    // s->add_attribute(ShaderAttribute::POSITION, "position");
+    // s->add_attribute(ShaderAttribute::NORMAL, "normal");
 
-    s->bind_uniforms_and_attributes();
-    this->trees.push_back(ObjectMesh(s, new Mesh("assets/meshes/tent.mesh")));
-    this->trees.back().static_load();
-    float x = (float)this->width / 2.0f;
-    float y = (float)this->height / 2.0f;
-    this->trees.back().set_position(glm::vec3(x,y,this->get_height(x,y)));
+    // s->bind_uniforms_and_attributes();
+    // this->trees.push_back(ObjectMesh(s, new Mesh("assets/meshes/tent.mesh")));
+    // this->trees.back().static_load();
+    // float x = (float)this->width / 2.0f;
+    // float y = (float)this->height / 2.0f;
+    // this->trees.back().set_position(glm::vec3(x,y,this->get_height(x,y)));
 }
 
 /**
