@@ -66,12 +66,21 @@ public:
     void static_load();
     void draw() const;
 
+    unsigned int get_type() const;
+
+    static const unsigned int MESH_POSITIONS           = 1 << 0;
+    static const unsigned int MESH_NORMALS             = 1 << 1;
+    static const unsigned int MESH_COLORS              = 1 << 2;
+    static const unsigned int MESH_TEXTURE_COORDINATES = 1 << 3;
+
 private:
     void load_mesh_from_file(const std::string& filename);
 
     enum {
         POSITION_VB,
         NORMAL_VB,
+        COLOR_VB,
+        TEXTURE_VB,
         INDICES_VB,
 
         NUM_BUFFERS

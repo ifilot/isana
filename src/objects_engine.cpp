@@ -21,12 +21,57 @@
 #include "objects_engine.h"
 
 ObjectsEngine::ObjectsEngine() {
-    this->add_shader("assets/shaders/tree");
-    this->add_mesh("assets/meshes/tree.mesh");
+    unsigned int prop_id = 0;
 
-    this->objects.push_back(new ObjectMesh(this->shaders.back(), this->meshes.back()));
-    this->objects.push_back(new ObjectMesh(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_position(glm::vec3(25, 25, 2));
+    // add custom shader
+    this->add_shader("assets/shaders/coordinate_system");
+
+    static const glm::vec3 blue(0.0f,0.0f,1.0f);
+
+    this->add_mesh("assets/meshes/sphere.mesh");
+    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 0.5f));
+    prop_id = this->objects.back()->add_property("object_color", 3);
+    this->objects.back()->set_property_value(prop_id, &blue[0]);
+    this->objects.back()->load();
+
+    this->add_mesh("assets/meshes/arrow.mesh");
+
+    // z-coordinate
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
+    // prop_id = this->objects.back()->add_property("object_color", 3);
+    // this->objects.back()->set_property_value(prop_id, &glm::vec3(0,0,1)[0]);
+    // this->objects.back()->load();
+
+    // // // y-coordinate
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
+    // this->objects.back()->set_rotation_matrix(glm::rotate(-(float)M_PI / 2.0f, glm::vec3(1.0f,0.0f,0.0f)));
+    // prop_id = this->objects.back()->add_property("object_color", 3);
+    // this->objects.back()->set_property_value(prop_id, &glm::vec3(0,1,0)[0]);
+    // this->objects.back()->load();
+
+    // // // x-coordinate
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
+    // this->objects.back()->set_rotation_matrix(glm::rotate((float)M_PI / 2.0f, glm::vec3(0.0f,1.0f,0.0f)));
+    // prop_id = this->objects.back()->add_property("object_color", 3);
+    // this->objects.back()->set_property_value(prop_id, &glm::vec3(1,0,0)[0]);
+    // this->objects.back()->load();
+
+    // this->add_shader("assets/shaders/tree");
+    // this->add_mesh("assets/meshes/tree.mesh");
+
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.back()->set_position(glm::vec3(25, 25, 2));
+
+    // this->add_shader("assets/shaders/tree");
+    // this->add_mesh("assets/meshes/turbine.mesh");
+
+    // this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+    // this->objects.back()->set_position(glm::vec3(25, 28, 4));
 }
 
 void ObjectsEngine::update() {
@@ -41,15 +86,6 @@ void ObjectsEngine::draw() {
 
 unsigned int ObjectsEngine::add_shader(const std::string& filename) {
     this->shaders.push_back(new Shader(filename));
-
-    this->shaders.back()->add_uniform(ShaderUniform::MAT4, "model");
-    this->shaders.back()->add_uniform(ShaderUniform::MAT4, "view");
-    this->shaders.back()->add_uniform(ShaderUniform::MAT4, "mvp");
-
-    this->shaders.back()->add_attribute(ShaderAttribute::POSITION, "position");
-    this->shaders.back()->add_attribute(ShaderAttribute::NORMAL, "normal");
-
-    this->shaders.back()->bind_uniforms_and_attributes();
 
     return this->shaders.size() - 1;
 }

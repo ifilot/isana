@@ -191,6 +191,8 @@ void Mesh::static_load() {
     // load the mesh into memory
     unsigned int size = this->indices.size();
 
+    unsigned int vertex_id = 0;
+
     // generate a vertex array object and store it in the pointer
     glGenVertexArrays(1, &this->m_vertex_array_object);
     glBindVertexArray(this->m_vertex_array_object);
@@ -208,23 +210,44 @@ void Mesh::static_load() {
     glBufferData(GL_ARRAY_BUFFER, this->positions.size() * 3 * sizeof(float), &this->positions[0][0], GL_STATIC_DRAW);
 
     // specifies the generic vertex attribute of index 0 to be enabled
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(vertex_id);
     // define an array of generic vertex attribute data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     /*
      * NORMALS
      */
 
+    // up the vertex_id
+     vertex_id++;
     // bind a buffer identified by POSITION_VB and interpret this buffer as an array
     glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
     // fill the buffer with data
     glBufferData(GL_ARRAY_BUFFER, this->normals.size() * 3 * sizeof(float), &this->normals[0][0], GL_STATIC_DRAW);
 
     // specifies the generic vertex attribute of index 0 to be enabled
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(vertex_id);
     // define an array of generic vertex attribute data
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+    if(this->colors.size() > 0) {
+        /*
+         * COLORS
+         */
+
+         // up the vertex_id
+        vertex_id++;
+        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
+        // fill the buffer with data
+        glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 3 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
+
+        // specifies the generic vertex attribute of index 0 to be enabled
+        glEnableVertexAttribArray(vertex_id);
+        // define an array of generic vertex attribute data
+        glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
     /*
      * INDICES_VB
@@ -250,4 +273,26 @@ void Mesh::draw() const {
     // after this command, any commands that use a vertex array will
     // no longer work
     glBindVertexArray(0);
+}
+
+unsigned int Mesh::get_type() const {
+    unsigned int type = 0;
+
+    if(this->positions.size() > 0) {
+        type |= this->MESH_POSITIONS;
+    }
+
+    if(this->normals.size() > 0) {
+        type |= this->MESH_NORMALS;
+    }
+
+    if(this->colors.size() > 0) {
+        type |= this->MESH_COLORS;
+    }
+
+    if(this->texture_coordinates.size() > 0) {
+        type |= this->MESH_TEXTURE_COORDINATES;
+    }
+
+    return type;
 }

@@ -27,14 +27,46 @@
 #include "shader.h"
 #include "mesh.h"
 
+
+/**
+ * @brief      a property that will be parsed to the shader as a uniform
+ */
+class ObjectProperty {
+public:
+    ObjectProperty(const std::string& _name, unsigned int size);
+
+    void set_value(const float* val);
+
+    inline const float* get_value() const {
+        return &this->val[0];
+    }
+
+    inline const std::string& get_name() const {
+        return this->name;
+    }
+
+    inline unsigned int get_size() const {
+        return this->val_size;
+    }
+
+private:
+    std::vector<float> val;
+    unsigned int val_size;
+    std::string name;
+};
+
 class Object {
 public:
     Object() {}
     Object(Shader* shader, const Mesh* _mesh);
 
-    virtual void draw() = 0;
+    void draw();
 
-    void parse_uniform(unsigned int id, const float* val);
+    void load();
+
+    unsigned int add_property(const std::string& _name, unsigned int size);
+
+    void set_property_value(unsigned int prop_id, const float* val);
 
     inline void set_position(glm::vec3 _position) {
         this->position = _position;
@@ -52,81 +84,15 @@ public:
         return this->position;
     }
 
-protected:
+private:
     Shader* shader;
     const Mesh*   mesh;
 
-    glm::mat4 model;
+    std::vector<ObjectProperty> properties;
+
     glm::mat4 scale;
     glm::mat4 rotation;
     glm::vec3 position;
-};
-
-class ObjectTexturedMesh : public Object {
-public:
-    ObjectTexturedMesh(Shader* shader, const Mesh* _mesh);
-
-    void draw();
-private:
-
-    enum {
-        POSITION_VB,
-        NORMAL_VB,
-        INDICES_VB,
-        TEXTURE_COORDINATE_VB,
-
-        NUM_BUFFERS
-    };
-
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_array_buffers[NUM_BUFFERS];
-};
-
-class ObjectLines : public Object {
-public:
-    ObjectLines(Shader* shader, const Mesh* _mesh);
-
-    void draw();
-    void static_load();
-private:
-
-    enum {
-        POSITION_VB,
-        INDICES_VB,
-
-        NUM_BUFFERS
-    };
-
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_array_buffers[NUM_BUFFERS];
-};
-
-class ObjectMesh : public Object {
-public:
-    ObjectMesh(Shader* shader, const Mesh* _mesh);
-
-    void draw();
-private:
-
-    enum {
-        POSITION_VB,
-        NORMAL_VB,
-        INDICES_VB,
-
-        NUM_BUFFERS
-    };
-
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_array_buffers[NUM_BUFFERS];
-};
-
-class ObjectColoredMesh : public Object {
-public:
-    ObjectColoredMesh(Shader* shader, const Mesh* _mesh);
-
-    void draw();
-    void static_load();
-private:
 
     enum {
         POSITION_VB,
@@ -140,5 +106,6 @@ private:
     GLuint m_vertex_array_object;
     GLuint m_vertex_array_buffers[NUM_BUFFERS];
 };
+
 
 #endif //_OBJECT_H

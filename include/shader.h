@@ -66,7 +66,7 @@ public:
         POSITION,
         NORMAL,
         COLOR,
-        TEXTURE,
+        TEXTURE_COORDINATE,
 
         NUM_ATTR_TYPES
     };
