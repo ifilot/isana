@@ -23,6 +23,9 @@
 
 #include <vector>
 #include <iostream>
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
 #include "shader.h"

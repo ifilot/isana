@@ -124,11 +124,11 @@ void Visualizer::handle_key_down(const int& key, const int& scancode, const int&
     }
 
     if(key == 'S') {
-        Camera::get().pan_down();
+        Camera::get().pan_up();
     }
 
     if(key == 'W') {
-        Camera::get().pan_up();
+        Camera::get().pan_down();
     }
 
     if(key == 'Q') {
@@ -154,6 +154,16 @@ void Visualizer::handle_key_down(const int& key, const int& scancode, const int&
  */
 void Visualizer::handle_mouse_key_down(const int& button, const int& action, const int& mods) {
 
+}
+
+void Visualizer::handle_scroll(double xoffset, double yoffset) {
+    if(yoffset > 0) {
+        Camera::get().zoom_out();
+    }
+
+    if(yoffset < 0) {
+        Camera::get().zoom_in();
+    }
 }
 
 /**

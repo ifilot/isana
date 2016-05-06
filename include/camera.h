@@ -118,6 +118,22 @@ public:
         }
     }
 
+    inline void zoom_out() {
+        this->distance += 1.0;
+
+        if(distance > 100.0) {
+            distance = 100.0;
+        }
+    }
+
+    inline void zoom_in() {
+        this->distance -= 1.0;
+
+        if(distance < 5.0) {
+            distance = 5.0;
+        }
+    }
+
 private:
     /**
      * @brief       camera constructor

@@ -88,6 +88,14 @@ public:
      */
     void handle_mouse_key_down(const int& button, const int& action, const int& mods);
 
+    /**
+     * @fn handle_scroll
+     * @brief handles mouse scrolls
+     *
+     * @return void
+     */
+    void handle_scroll(double xoffset, double yoffset);
+
 private:
     /**
      * @fn Visualizer method

@@ -162,6 +162,13 @@ public:
      */
     static void window_size_callback(GLFWwindow* window, int width, int height);
 
+    /**
+     * @fn scroll_callback
+     *
+     * @brief handle scroll callbacks
+     */
+    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 private:
     /**
      * @fn Display

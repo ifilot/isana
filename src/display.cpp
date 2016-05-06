@@ -44,13 +44,16 @@ Display::Display() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+    // give hint for multisampling
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     int major, minor, rev;
     glfwGetVersion(&major, &minor, &rev);
 
     // create a windowed mode window and its OpenGL context
-    this->m_width = 600;
+    this->m_width = 800;
     this->m_height = 600;
     this->m_window = glfwCreateWindow(this->m_width, this->m_height, "Yumi", NULL, NULL);
     glViewport(0, 0, this->m_width, this->m_height);
@@ -74,6 +77,9 @@ Display::Display() {
     // set window callback when a window is resized
     glfwSetWindowSizeCallback(this->m_window, window_size_callback);
 
+    // set scroll callback
+    glfwSetScrollCallback(this->m_window, scroll_callback);
+
     // initialize GLEW
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
@@ -87,6 +93,9 @@ Display::Display() {
     // enable culling
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+
+    // enable multisampling
+    glEnable(GL_MULTISAMPLE);
 
     // disable cursor (we are going to use our own)
     //glfwSetInputMode(this->m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -245,6 +254,15 @@ void Display::key_callback(GLFWwindow* window, int key, int scancode, int action
  */
 void Display::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     Visualizer::get().handle_mouse_key_down(button, action, mods);
+}
+
+/**
+ * @fn scroll_callback
+ *
+ * @brief registers and handles mouse button presses
+ */
+void Display::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    Visualizer::get().handle_scroll(xoffset, yoffset);
 }
 
 /**
