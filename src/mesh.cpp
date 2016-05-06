@@ -249,6 +249,24 @@ void Mesh::static_load() {
         glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
+    if(this->texture_coordinates.size() > 0) {
+        /*
+         * TEXTURE COORDINATES
+         */
+
+         // up the vertex_id
+        vertex_id++;
+        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[TEXTURE_VB]);
+        // fill the buffer with data
+        glBufferData(GL_ARRAY_BUFFER, this->texture_coordinates.size() * 2 * sizeof(float), &this->texture_coordinates[0][0], GL_STATIC_DRAW);
+
+        // specifies the generic vertex attribute of index 0 to be enabled
+        glEnableVertexAttribArray(vertex_id);
+        // define an array of generic vertex attribute data
+        glVertexAttribPointer(vertex_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
     /*
      * INDICES_VB
      */

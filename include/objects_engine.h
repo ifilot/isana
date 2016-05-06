@@ -26,6 +26,8 @@
 #include "mesh.h"
 #include "shader.h"
 #include "object.h"
+#include "texture_manager.h"
+#include "terrain.h"
 
 /**
  * @class ObjectsEngine class

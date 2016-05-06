@@ -69,6 +69,9 @@ void Object::draw() {
 void Object::load() {
     // load uniforms
     for(unsigned int i=0; i<this->properties.size(); i++) {
+        if(this->properties[i].get_size() == 1) {
+            this->shader->add_uniform(ShaderUniform::TEXTURE, this->properties[i].get_name());
+        }
         if(this->properties[i].get_size() == 3) {
             this->shader->add_uniform(ShaderUniform::VEC3, this->properties[i].get_name());
         }

@@ -192,6 +192,16 @@ public:
      */
     void draw();
 
+    /**
+     * @brief      Get the height.
+     *
+     * @param[in]  x     global coordinate x
+     * @param[in]  y     global coordinate y
+     *
+     * @return     Height.
+     */
+    float get_height(float x, float y);
+
 private:
     /**
      * @fn          Terrain
@@ -243,16 +253,6 @@ private:
      * @return      interpolated value
      */
     double bicubic_interpolate (double p[4][4], double x, double y);
-
-    /**
-     * @brief      Get the height.
-     *
-     * @param[in]  x     global coordinate x
-     * @param[in]  y     global coordinate y
-     *
-     * @return     Height.
-     */
-    float get_height(float x, float y);
 
     /**
      * @fn          idx

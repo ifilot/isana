@@ -23,6 +23,8 @@
 ObjectsEngine::ObjectsEngine() {
     unsigned int prop_id = 0;
 
+    TextureManager::get();
+
     // add custom shader
     this->add_shader("assets/shaders/coordinate_system");
 
@@ -65,11 +67,25 @@ ObjectsEngine::ObjectsEngine() {
     this->objects.back()->set_position(glm::vec3(25, 25, 2));
     this->objects.back()->load();
 
+    this->add_shader("assets/shaders/turbine");
     this->add_mesh("assets/meshes/turbine.mesh");
 
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_position(glm::vec3(25, 28, 4));
-    this->objects.back()->load();
+    // setup 3x3 array of wind turbines
+
+    for(unsigned int i=0; i<3; i++) {
+        for(unsigned int j=0; j<3; j++) {
+
+            float x = (float)(5 + i * 5);
+            float y = (float)(28 + j * 5);
+
+            float z = Terrain::get().get_height(x,y);
+
+            this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+            prop_id = this->objects.back()->add_property("tex", 1);
+            this->objects.back()->set_position(glm::vec3(x, y, z));
+            this->objects.back()->load();
+       }
+    }
 }
 
 void ObjectsEngine::update() {

@@ -47,7 +47,7 @@ Display::Display() {
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
     // give hint for multisampling
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 16);
 
     int major, minor, rev;
     glfwGetVersion(&major, &minor, &rev);

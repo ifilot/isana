@@ -26,7 +26,7 @@ TextureManager::TextureManager() {
 }
 
 void TextureManager::load_image() {
-    this->texture = new Texture("./assets/png/cube_uv_map.png");
+    this->texture = new Texture("./assets/png/turbine_texture.png");
     this->texture->bind(0);
 }
 
@@ -38,6 +38,7 @@ Texture::Texture(const std::string& filename) {
 
     if(ext == ".PNG" || ext == ".png") {
         m_texture = png_texture_load(filename.c_str(), &width, &height);
+        std::cout << "Loading texture " << filename << std::endl;
         return;
     }
 
