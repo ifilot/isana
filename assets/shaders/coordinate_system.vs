@@ -2,7 +2,6 @@
 
 in vec3 position;
 in vec3 normal;
-in vec3 object_color;
 
 out vec3 position0;
 out vec3 color0;
@@ -15,6 +14,7 @@ out vec3 normal_cameraspace;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 mvp;
+uniform vec3 object_color;
 
 void main() {
     // output position of the vertex

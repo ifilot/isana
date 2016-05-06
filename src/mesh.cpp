@@ -296,3 +296,11 @@ unsigned int Mesh::get_type() const {
 
     return type;
 }
+
+void Mesh::bind() const {
+    glBindVertexArray(this->m_vertex_array_object);
+}
+
+void Mesh::unbind() const {
+    glBindVertexArray(0);
+}

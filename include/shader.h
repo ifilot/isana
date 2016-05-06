@@ -98,6 +98,10 @@ public:
 
     void link_shader();
 
+    inline bool is_loaded() const {
+        return flag_loaded;
+    }
+
     virtual ~Shader();
 
 protected:
@@ -114,6 +118,8 @@ private:
 
     std::vector<ShaderUniform> shader_uniforms; //<! vector holding shader uniforms
     std::vector<GLuint> m_uniforms;             // reference array to the uniforms
+
+    bool flag_loaded;
 };
 
 #endif //_SHADER_H

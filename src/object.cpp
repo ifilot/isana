@@ -50,9 +50,11 @@ void Object::draw() {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * model;
 
-    this->properties[0].set_value(&model[0][0]);
-    this->properties[1].set_value(&view[0][0]);
-    this->properties[2].set_value(&mvp[0][0]);
+    this->properties[0].set_value(glm::value_ptr(model));
+    this->properties[1].set_value(glm::value_ptr(view));
+    this->properties[2].set_value(glm::value_ptr(mvp));
+
+    this->mesh->bind();
 
     this->shader->link_shader();
     for(unsigned int i=0; i<this->properties.size(); i++) {
@@ -60,6 +62,8 @@ void Object::draw() {
     }
 
     this->mesh->draw();
+
+    this->mesh->unbind();
 }
 
 void Object::load() {
@@ -88,8 +92,12 @@ void Object::load() {
         this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "texture_coordinate");
     }
 
-    // bind
-    this->shader->bind_uniforms_and_attributes();
+    if(!this->shader->is_loaded()) {
+        // corresponding mesh needs to be bound when vertex array gets loaded
+        this->mesh->bind();
+        this->shader->bind_uniforms_and_attributes();
+        this->mesh->unbind();
+    }
 }
 
 unsigned int Object::add_property(const std::string& _name, unsigned int size) {

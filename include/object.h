@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <iostream>
+#include <glm/ext.hpp>
 
 #include "shader.h"
 #include "mesh.h"
@@ -102,9 +103,6 @@ private:
 
         NUM_BUFFERS
     };
-
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_array_buffers[NUM_BUFFERS];
 };
 
 

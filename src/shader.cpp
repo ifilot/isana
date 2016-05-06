@@ -53,6 +53,8 @@ Shader::Shader(const std::string& filename) {
     for(unsigned int i = 0; i < NUM_SHADERS; i++) {
         glAttachShader(this->m_program, m_shaders[i]);
     }
+
+    this->flag_loaded = false;
 }
 
 void Shader::add_uniform(unsigned int type, std::string name) {
@@ -82,6 +84,8 @@ void Shader::bind_uniforms_and_attributes() {
     for(unsigned int i=0; i<this->shader_uniforms.size(); i++) {
         m_uniforms[i] = glGetUniformLocation(this->m_program, shader_uniforms[i].get_name().c_str());
     }
+
+    this->flag_loaded = true;
 }
 
 void Shader::set_uniform(unsigned int uniform_id, const float* val) {

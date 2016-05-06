@@ -65,6 +65,8 @@ public:
 
     void static_load();
     void draw() const;
+    void bind() const;
+    void unbind() const;
 
     unsigned int get_type() const;
 
