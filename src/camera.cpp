@@ -56,9 +56,11 @@ const glm::mat4& Camera::get_projection() const {
 }
 
 /**
- * @brief       get the camera position
+ * @brief       set the camera aspect ratio
  *
- * @return      camera position
+ * @param       aspect_ratio    the aspect ratio
+ *
+ * @return      void
  */
 void Camera::set_aspect_ratio(const float& aspect_ratio) {
     this->m_aspect = aspect_ratio;
@@ -67,6 +69,8 @@ void Camera::set_aspect_ratio(const float& aspect_ratio) {
 /**
  * @brief       set the camera position
  *
+ * @param       position    the position
+ *
  * @return      void
  */
 void Camera::set_position(const glm::vec3 _position) {
@@ -74,9 +78,9 @@ void Camera::set_position(const glm::vec3 _position) {
 }
 
 /**
- * @brief       set the aspect ratio of the screen (changes projection matrix)
+ * @brief       get the camera position
  *
- * @return      void
+ * @return      camera position
  */
 const glm::vec3& Camera::get_position() const {
     return this->position;

@@ -81,6 +81,15 @@ const unsigned int* Mesh::get_indices_start() const {
 
 void Mesh::load_mesh_from_file(const std::string& filename) {
     // open file
+    if(filename.back() == 'x') {
+        this->load_mesh_from_x_file(filename);
+    } else {
+        this->load_mesh_from_obj_file(filename);
+    }
+}
+
+void Mesh::load_mesh_from_obj_file(const std::string& filename) {
+    // open file
     std::ifstream f;
     f.open(filename.c_str());
 
@@ -164,6 +173,25 @@ void Mesh::load_mesh_from_file(const std::string& filename) {
             this->normals.push_back(_normal_coordinates[_normal_indices[i]]);
         }
     }
+}
+
+
+void Mesh::load_mesh_from_x_file(const std::string& filename) {
+    /*
+     * file organisation:
+     *
+     * > start reading at Frame Root
+     *
+     * > 1 transformation matrix of root
+     * > 2 transformation matrix of object
+     * > 3 mesh (number of positions)
+     * > 4 polygons (3,4,5,6) with indices
+     * > 5 normals
+     * > 6 polygons (3,4,5,6) with indices
+     * > 7 texture coordinates
+     * > 8 XSkinMeshHeader ??
+     * > 9 skin weights per bone (indices --> weights --> matrix)
+     */
 }
 
 void Mesh::center() {

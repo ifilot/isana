@@ -81,6 +81,10 @@ public:
 private:
     void load_mesh_from_file(const std::string& filename);
 
+    void load_mesh_from_obj_file(const std::string& filename);
+
+    void load_mesh_from_x_file(const std::string& filename);
+
     enum {
         POSITION_VB,
         NORMAL_VB,

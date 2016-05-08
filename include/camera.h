@@ -88,22 +88,37 @@ public:
      */
     void set_aspect_ratio(const float& aspect_ratio);
 
+    /**
+     * @brief      pan the camera to the left
+     */
     inline void pan_left() {
         this->look_at -= glm::vec3(1, 0, 0);
     }
 
+    /**
+     * @brief      pan the camera to the right
+     */
     inline void pan_right() {
         this->look_at -= glm::vec3(-1, 0, 0);
     }
 
+    /**
+     * @brief      pan the camera up
+     */
     inline void pan_up() {
         this->look_at -= glm::vec3(0, 1, 0);
     }
 
+    /**
+     * @brief      pan the camera down
+     */
     inline void pan_down() {
         this->look_at -= glm::vec3(0, -1, 0);
     }
 
+    /**
+     * @brief      rotate the camera in the clock-wise direction
+     */
     inline void angle_cw() {
         this->angle -= 0.1f;
         if(this->angle < 2.0f * M_PI) {
@@ -111,6 +126,9 @@ public:
         }
     }
 
+    /**
+     * @brief      rotate the camera in the counter-clock-wise direction
+     */
     inline void angle_ccw() {
         this->angle += 0.1f;
         if(this->angle > 2.0f * M_PI) {
@@ -118,6 +136,9 @@ public:
         }
     }
 
+    /**
+     * @brief      zoom out
+     */
     inline void zoom_out() {
         this->distance += 1.0;
 
@@ -126,6 +147,9 @@ public:
         }
     }
 
+    /**
+     * @brief      zoom in
+     */
     inline void zoom_in() {
         this->distance -= 1.0;
 
@@ -153,6 +177,11 @@ private:
 
     float m_aspect;         //!< aspect ratio of the window
 
+    /**
+     * @brief       calculate the position of the camera from the angle and orientation
+     *
+     * @return      void
+     */
     void calculate_position();
 
     Camera(Camera const&)          = delete;
