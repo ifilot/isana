@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -57,6 +57,10 @@ unsigned int Mesh::get_nr_normals() const {
 
 unsigned int Mesh::get_nr_colors() const {
     return this->colors.size();
+}
+
+unsigned int Mesh::get_nr_texture_coordinates() const {
+    return this->texture_coordinates.size();
 }
 
 const glm::vec3* Mesh::get_positions_start() const {
@@ -192,6 +196,85 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
      * > 8 XSkinMeshHeader ??
      * > 9 skin weights per bone (indices --> weights --> matrix)
      */
+
+     // open file
+    std::ifstream f;
+    f.open(filename.c_str());
+    unsigned int reading_state = 0x00000000;
+    const unsigned int rs_bones = 1 << 0;
+    const unsigned int rs_mesh  = 1 << 1;
+
+    std::vector<glm::vec3> _positions;
+    std::vector<glm::vec2> _texture_coordinates;
+    std::vector<glm::vec3> _normal_coordinates;
+    std::vector<unsigned int> _position_indices;
+    std::vector<unsigned int> _texture_indices;
+    std::vector<unsigned int> _normal_indices;
+
+    boost::regex regex_open_frame("^\\s*Frame Armature_([A-Za-z_0-9]+) \\{");
+    boost::regex regex_close_frame("^\\s*\\}");
+    boost::regex regex_mesh("^\\s*Mesh \\{ ");
+    boost::regex regex_number("^\\s*([0-9]+);");
+
+    unsigned int level = 0;
+    const Bone* bone_ptr = NULL;
+
+    Armature armature;
+
+    reading_state |= rs_bones;
+    std::string line;
+    while(getline(f, line)) {
+        boost::smatch what1;
+
+        // look for occurrences of Frame
+        if(reading_state & rs_bones) {
+            if (boost::regex_match(line, what1, regex_open_frame)) {
+                level++;
+                glm::mat4 mat = this->read_frame_transform_matrix(&f);
+
+                // root bone encountered
+                if(level > 0) {
+                    bone_ptr = armature.add_bone(mat, what1[1], bone_ptr);
+                }
+                continue;
+            }
+            if (boost::regex_match(line, what1, regex_close_frame)) {
+                if(level > 0) {
+                    level--;
+                    bone_ptr = bone_ptr->get_parent();
+                }
+                continue;
+            }
+        }
+
+        if(reading_state & rs_bones || reading_state & rs_mesh) {
+            if (boost::regex_search(line, regex_mesh)) {
+                reading_state &= ~rs_mesh;
+
+                getline(f, line); // read number of vertices
+                boost::regex_match(line, what1, regex_number);
+                const unsigned int nr_vertices = boost::lexical_cast<unsigned int>(what1[1]);
+
+                boost::regex regex_vec3("^\\s*([0-9.-]+)[ ;]+([0-9.-]+)[ ;]+([0-9.-]+)[ ;,]+");
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    getline(f, line);
+                    boost::smatch what2;
+                    if(boost::regex_match(line, what2, regex_vec3)) {
+                        _positions.push_back(glm::vec3(boost::lexical_cast<float>(what2[1]),
+                                                       boost::lexical_cast<float>(what2[2]),
+                                                       boost::lexical_cast<float>(what2[3])
+                                                       )
+                                            );
+                    }
+                }
+                std::cout << _positions.size() << std::endl;
+            }
+        }
+
+    }
+
+    std::cout << armature.get_nr_bones() << std::endl;
+    armature.print_bone_list();
 }
 
 void Mesh::center() {
@@ -349,4 +432,34 @@ void Mesh::bind() const {
 
 void Mesh::unbind() const {
     glBindVertexArray(0);
+}
+
+glm::mat4 Mesh::read_frame_transform_matrix(std::ifstream* f) {
+    std::string line;
+
+    // skip first line
+    getline(*f, line);
+    boost::smatch what1;
+
+    boost::regex regex_frame_transform_matrix("^\\s*FrameTransformMatrix {");
+
+    if (boost::regex_match(line, what1, regex_frame_transform_matrix)) {
+        glm::mat4 mat;
+        boost::regex regex_frame_transform_matrix("^\\s*([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+)[,;]+");
+        // read matrix
+        for(unsigned int i=0; i<4; i++) {
+            getline(*f, line);
+            if (boost::regex_match(line, what1, regex_frame_transform_matrix)) {
+                for(unsigned int j=0; j<4; j++) {
+                    mat[i][j] = boost::lexical_cast<float>(what1[j+1]);
+                }
+            }
+        }
+
+        // discard next line and return
+        getline(*f, line);
+        return mat;
+    }
+
+    return glm::mat4(0.0);
 }

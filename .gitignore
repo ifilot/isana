@@ -32,6 +32,7 @@
 err
 
 bin/isana
+bin/isana-test
 *.ply
 *.chg
 

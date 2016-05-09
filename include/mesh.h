@@ -36,6 +36,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "armature.h"
+
 class Mesh {
 private:
     std::vector<glm::vec3> positions;
@@ -58,6 +60,7 @@ public:
     unsigned int get_nr_positions() const;
     unsigned int get_nr_normals() const;
     unsigned int get_nr_colors() const;
+    unsigned int get_nr_texture_coordinates() const;
 
     const glm::vec3* get_positions_start() const;
     const glm::vec3* get_normals_start() const;
@@ -84,6 +87,8 @@ private:
     void load_mesh_from_obj_file(const std::string& filename);
 
     void load_mesh_from_x_file(const std::string& filename);
+
+    glm::mat4 read_frame_transform_matrix(std::ifstream* f);
 
     enum {
         POSITION_VB,

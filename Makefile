@@ -21,6 +21,7 @@
 
 # set compiler and compile options
 EXEC = isana
+TEST = $(EXEC)-test
 # use the GNU C++ compiler
 CXX = g++
 # use some optimization, report all warnings and enable debugging
@@ -35,6 +36,7 @@ INCDIR  = ./include
 OBJDIR  = ./obj
 BINDIR  = ./bin
 SRCDIR  = ./src
+TESTDIR = ./test
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -51,7 +53,11 @@ CFLAGS += -I$(INCDIR) -I$(SRCDIR)
 # add here the source files for the compilation
 SOURCES = isana.cpp camera.cpp display.cpp visualizer.cpp object.cpp \
 shader.cpp texture_manager.cpp mesh.cpp terrain.cpp perlin_noise.cpp \
-objects_engine.cpp
+objects_engine.cpp armature.cpp
+
+SOURCES_TEST = mesh.cpp armature.cpp
+TESTCPP = isana_test.cpp
+TESTSRC = $(TESTDIR)/$(TESTCPP)
 
 _INCS = $(SOURCES:.cpp=.h)
 INCS = $(patsubst %,./include/%,$(_INCS))
@@ -60,11 +66,19 @@ INCS = $(patsubst %,./include/%,$(_INCS))
 # and adding a path
 _OBJ = $(SOURCES:.cpp=.o)
 OBJ = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
+_OBJ_TEST = $(SOURCES_TEST:.cpp=.o)
+OBJ_TEST = $(patsubst %,$(OBJDIR)/%,$(_OBJ_TEST))
 
 all: $(BINDIR)/$(EXEC)
 
+test: $(BINDIR)/$(TEST) $(BINDIR)/$(EXEC)
+	BOOST_TEST_LOG_LEVEL=message $(BINDIR)/$(TEST)
+
 $(BINDIR)/$(EXEC): $(OBJ) $(INCS)
 	$(CXX) -o $(BINDIR)/$(EXEC) $(OBJ) $(LDFLAGS)
+
+$(BINDIR)/$(TEST): $(OBJ_TEST) $(TESTSRC) $(INCS)
+	$(CXX) -o $(BINDIR)/$(TEST) $(TESTSRC) $(OBJ_TEST) $(LIBDIR) $(CFLAGS) $(LDFLAGS) $(LDTEST)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/%.h
 	$(CXX) -c -o $@ $< $(CFLAGS)
