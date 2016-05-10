@@ -30,7 +30,10 @@
  *
  */
 Bone::Bone(const glm::mat4& frame, const std::string& _name, const Bone* _parent) {
-    this->matrix_frame = frame;
+
+    static const glm::mat4 T0(glm::rotate(glm::mat4(1.0), (float)M_PI / 2.0f, glm::vec3(1,0,0)));
+
+    this->matrix_frame = T0 * frame;
     this->name = _name;
     this->parent = _parent;
 }
