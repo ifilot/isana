@@ -36,4 +36,7 @@ BOOST_AUTO_TEST_CASE(meshtest1) {
 BOOST_AUTO_TEST_CASE(meshtest2) {
     BOOST_TEST_MESSAGE( "Testing Reading .x Mesh..." );
     Mesh mesh("./assets/meshes/turbine.x");
+    BOOST_CHECK(mesh.get_nr_positions() == 435);
+    BOOST_CHECK(mesh.get_nr_normals() == 435);
+    BOOST_CHECK(mesh.get_nr_texture_coordinates() == 435);
 }

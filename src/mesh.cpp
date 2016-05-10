@@ -200,28 +200,42 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
      // open file
     std::ifstream f;
     f.open(filename.c_str());
-    unsigned int reading_state = 0x00000000;
-    const unsigned int rs_bones = 1 << 0;
-    const unsigned int rs_mesh  = 1 << 1;
+
+    unsigned int reading_state          = 0x00000000;
+    const unsigned int rs_bones         = 1 << 0;
+    const unsigned int rs_mesh          = 1 << 1;
+    const unsigned int rs_normals       = 1 << 2;
+    const unsigned int rs_textures      = 1 << 3;
+    const unsigned int rs_meshweight    = 1 << 4;
 
     std::vector<glm::vec3> _positions;
     std::vector<glm::vec2> _texture_coordinates;
     std::vector<glm::vec3> _normal_coordinates;
+
     std::vector<unsigned int> _position_indices;
     std::vector<unsigned int> _texture_indices;
     std::vector<unsigned int> _normal_indices;
 
+    std::vector<std::vector<float>> _weights;
+    std::vector<glm::mat4> _offset_matrices;
+
     boost::regex regex_open_frame("^\\s*Frame Armature_([A-Za-z_0-9]+) \\{");
     boost::regex regex_close_frame("^\\s*\\}");
     boost::regex regex_mesh("^\\s*Mesh \\{ ");
-    boost::regex regex_number("^\\s*([0-9]+);");
+    boost::regex regex_normals("^\\s*MeshNormals \\{ ");
+    boost::regex regex_textures("^\\s*MeshTextureCoords \\{ ");
+    boost::regex regex_skinweight("^\\s*SkinWeights \\{");
+    boost::regex regex_bone_name("^\\s*\"Armature_([A-Za-z_0-9]+)\",");
+    boost::regex regex_number("^\\s*([0-9]+)[;,]");
+    boost::regex regex_value("^\\s*([0-9.-]+)[;,]");
 
     unsigned int level = 0;
     const Bone* bone_ptr = NULL;
 
     Armature armature;
-
     reading_state |= rs_bones;
+    reading_state |= rs_mesh;
+
     std::string line;
     while(getline(f, line)) {
         boost::smatch what1;
@@ -247,8 +261,10 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             }
         }
 
-        if(reading_state & rs_bones || reading_state & rs_mesh) {
+        // positions
+        if(reading_state & rs_mesh) {
             if (boost::regex_search(line, regex_mesh)) {
+                reading_state &= ~rs_bones;
                 reading_state &= ~rs_mesh;
 
                 getline(f, line); // read number of vertices
@@ -267,14 +283,149 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                                             );
                     }
                 }
-                std::cout << _positions.size() << std::endl;
+                getline(f, line);
+                boost::regex_match(line, what1, regex_number);
+                const unsigned int nr_indices = boost::lexical_cast<unsigned int>(what1[1]);
+                for(unsigned int i=0; i<nr_indices; i++) {
+                    getline(f, line);
+                    boost::trim(line);
+                    std::vector<std::string> pieces;
+                    boost::split(pieces, line, boost::is_any_of(",;"), boost::token_compress_on);
+
+                    _position_indices.push_back(boost::lexical_cast<unsigned int>(pieces[1]));
+                    _position_indices.push_back(boost::lexical_cast<unsigned int>(pieces[2]));
+                    _position_indices.push_back(boost::lexical_cast<unsigned int>(pieces[3]));
+                }
+            }
+            reading_state |= rs_normals;
+            continue;
+        }
+
+        // normals
+        if(reading_state & rs_normals) {
+            if (boost::regex_search(line, regex_normals)) {
+                reading_state &= ~rs_normals;
+
+                getline(f, line); // read number of vertices
+                boost::regex_match(line, what1, regex_number);
+                const unsigned int nr_vertices = boost::lexical_cast<unsigned int>(what1[1]);
+
+                boost::regex regex_vec3("^\\s*([0-9.-]+)[ ;]+([0-9.-]+)[ ;]+([0-9.-]+)[ ;,]+");
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    getline(f, line);
+                    boost::smatch what2;
+                    if(boost::regex_match(line, what2, regex_vec3)) {
+                        _normal_coordinates.push_back(glm::vec3(boost::lexical_cast<float>(what2[1]),
+                                                       boost::lexical_cast<float>(what2[2]),
+                                                       boost::lexical_cast<float>(what2[3])
+                                                       )
+                                            );
+                    }
+                }
+                getline(f, line);
+                boost::regex_match(line, what1, regex_number);
+                const unsigned int nr_indices = boost::lexical_cast<unsigned int>(what1[1]);
+                for(unsigned int i=0; i<nr_indices; i++) {
+                    getline(f, line);
+                    boost::trim(line);
+                    std::vector<std::string> pieces;
+                    boost::split(pieces, line, boost::is_any_of(",;"), boost::token_compress_on);
+
+                    _normal_indices.push_back(boost::lexical_cast<unsigned int>(pieces[1]));
+                    _normal_indices.push_back(boost::lexical_cast<unsigned int>(pieces[2]));
+                    _normal_indices.push_back(boost::lexical_cast<unsigned int>(pieces[3]));
+                }
+            }
+            // discard line
+            getline(f, line);
+
+            reading_state |= rs_textures;
+            continue;
+        }
+
+        // texture_coordinates
+        if(reading_state & rs_textures) {
+            if (boost::regex_search(line, regex_textures)) {
+                reading_state &= ~rs_textures;
+
+                getline(f, line); // read number of vertices
+                boost::regex_match(line, what1, regex_number);
+                const unsigned int nr_vertices = boost::lexical_cast<unsigned int>(what1[1]);
+
+                std::cout << nr_vertices << std::endl;
+
+                boost::regex regex_vec2("^\\s*([0-9.-]+)[ ;]+([0-9.-]+)[ ;,]+");
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    getline(f, line);
+                    boost::smatch what2;
+                    if(boost::regex_match(line, what2, regex_vec2)) {
+                        _texture_coordinates.push_back(glm::vec2(boost::lexical_cast<float>(what2[1]),
+                                                       boost::lexical_cast<float>(what2[2])
+                                                       )
+                                            );
+                    }
+                }
+            }
+            reading_state |= rs_meshweight;
+            continue;
+        }
+
+        // look for occurrences of SkinWeights
+        if(reading_state & rs_meshweight) {
+            if (boost::regex_match(line, what1, regex_skinweight)) {
+                boost::smatch what2;
+
+                getline(f, line); // read bone name
+                boost::regex_match(line, what2, regex_bone_name);
+                std::string name = what2[1];
+
+                getline(f, line); // read number of vertices
+                boost::regex_match(line, what2, regex_number);
+                const unsigned int nr_vertices = boost::lexical_cast<unsigned int>(what2[1]);
+
+                std::vector<unsigned int> idx(nr_vertices, 0);
+                std::vector<float> weights(nr_vertices, 0.0f);
+
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    getline(f, line);
+                    if(boost::regex_match(line, what2, regex_number)) {
+                        idx[i] = boost::lexical_cast<unsigned int>(what2[1]);
+                    }
+                }
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    getline(f, line);
+                    if(boost::regex_match(line, what2, regex_value)) {
+                        weights[i] = boost::lexical_cast<float>(what2[1]);
+                    }
+                }
+
+                _offset_matrices.push_back(this->read_frame_transform_matrix(&f));
+
+                // collect
+                _weights.push_back(std::vector<float>(_positions.size(), 0.0));
+                for(unsigned int i=0; i<nr_vertices; i++) {
+                    _weights[_weights.size()-1][idx[i]] = weights[i];
+                }
             }
         }
 
     }
 
-    std::cout << armature.get_nr_bones() << std::endl;
-    armature.print_bone_list();
+    // process all results
+    if(_position_indices.size() > 0) {
+        for(unsigned int i=0; i<_position_indices.size(); i++) {
+            this->indices.push_back(i);
+
+            this->positions.push_back(_positions[_position_indices[i]]);
+            this->texture_coordinates.push_back(_texture_coordinates[_position_indices[i]]);
+            this->texture_coordinates.back()[1] = 1.0f - this->texture_coordinates.back()[1];
+            this->normals.push_back(_normal_coordinates[_normal_indices[i]]);
+        }
+    }
+
+    for(unsigned int i; i<_offset_matrices.size(); i++) {
+        armature.get_bone_by_idx(i)->set_offset_matrix(_offset_matrices[i]);
+    }
 }
 
 void Mesh::center() {

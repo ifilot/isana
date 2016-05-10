@@ -68,7 +68,7 @@ ObjectsEngine::ObjectsEngine() {
     this->objects.back()->load();
 
     this->add_shader("assets/shaders/turbine");
-    this->add_mesh("assets/meshes/turbine.mesh");
+    this->add_mesh("assets/meshes/turbine.x");
 
     // setup 3x3 array of wind turbines
 

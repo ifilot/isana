@@ -57,6 +57,10 @@ public:
         return this->name;
     }
 
+    inline void set_offset_matrix(const glm::mat4& _offset_matrix) {
+        this->matrix_offset = _offset_matrix;
+    }
+
     inline const Bone* get_parent() const {
         return this->parent;
     }
@@ -83,6 +87,10 @@ public:
 
     inline unsigned int get_nr_bones() const {
         return this->bones.size();
+    }
+
+    inline Bone* get_bone_by_idx(unsigned int idx) const {
+        return this->bones[idx];
     }
 
 private:
