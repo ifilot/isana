@@ -40,7 +40,10 @@ BOOST_AUTO_TEST_CASE(meshtest2) {
     BOOST_CHECK(mesh.get_nr_normals() == 435);
     BOOST_CHECK(mesh.get_nr_texture_coordinates() == 435);
 
-    const Armature* armature = mesh.get_armature();
+    Armature* armature = mesh.get_armature();
     BOOST_CHECK(armature->get_nr_bones() == 3);
+    armature->set_bone_transformation(2, glm::rotate(glm::mat4(1.0), (float)M_PI, glm::vec3(0,0,1)));
+    armature->build_frame_matrices();
+    armature->build_glsl_matrices();
     armature->print_bone_list();
 }

@@ -56,7 +56,7 @@ public:
         return objects_engine_instance;
     }
 
-    void update();
+    void update(double dt);
 
     void draw();
 

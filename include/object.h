@@ -76,6 +76,8 @@ public:
 
     void load();
 
+    void update(double dt);
+
     unsigned int add_property(const std::string& _name, unsigned int _type, unsigned int _size);
 
     void set_property_value(unsigned int prop_id, const float* val);
@@ -114,6 +116,10 @@ private:
 
         NUM_BUFFERS
     };
+
+    double angle;
+    bool is_rigged;
+    unsigned int rig_idx;
 };
 
 

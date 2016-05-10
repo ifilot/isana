@@ -85,7 +85,7 @@ public:
     static const unsigned int MESH_TEXTURE_COORDINATES = 1 << 3;
     static const unsigned int MESH_ARMATURE            = 1 << 4;
 
-    inline const Armature* get_armature() const {
+    inline Armature* get_armature() const {
         return this->armature;
     }
 

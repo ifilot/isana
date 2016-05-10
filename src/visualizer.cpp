@@ -204,6 +204,7 @@ Visualizer::Visualizer():
  * @return Game class
  */
 void Visualizer::update(double dt) {
+    ObjectsEngine::get().update(dt);
 }
 
 void Visualizer::draw() {

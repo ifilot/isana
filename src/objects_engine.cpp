@@ -81,15 +81,16 @@ ObjectsEngine::ObjectsEngine() {
             float z = Terrain::get().get_height(x,y);
 
             this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-            prop_id = this->objects.back()->add_property("tex", ShaderUniform::TEXTURE, 1);
             this->objects.back()->set_position(glm::vec3(x, y, z));
             this->objects.back()->load();
        }
     }
 }
 
-void ObjectsEngine::update() {
-
+void ObjectsEngine::update(double dt) {
+    for(unsigned int i=0; i<this->objects.size(); i++) {
+        this->objects[i]->update(dt * (double)i / 10.0);
+    }
 }
 
 void ObjectsEngine::draw() {

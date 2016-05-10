@@ -63,6 +63,7 @@ void ObjectProperty::set_value(const float* _val) {
 
 Object::Object(Shader* _shader, const Mesh* _mesh) {
     /* load the default shader */
+    this->is_rigged = false;
     this->shader = _shader;
     this->mesh = _mesh;
     this->scale = glm::mat4(1.0f);
@@ -71,6 +72,19 @@ Object::Object(Shader* _shader, const Mesh* _mesh) {
     this->add_property("model", ShaderUniform::MAT4, 1);
     this->add_property("view", ShaderUniform::MAT4, 1);
     this->add_property("mvp", ShaderUniform::MAT4, 1);
+
+    if(this->mesh->get_type() & Mesh::MESH_TEXTURE_COORDINATES) {
+        this->add_property("tex", ShaderUniform::TEXTURE, 1);
+    }
+
+    if(this->mesh->get_type() & Mesh::MESH_ARMATURE) {
+        this->is_rigged = true;
+        this->rig_idx = this->add_property("armature", ShaderUniform::MAT4, this->mesh->get_armature()->get_nr_bones());
+        this->mesh->get_armature()->set_bone_transformation(2, glm::rotate(glm::mat4(1.0), (float)M_PI / 2.0f, glm::vec3(0,0,1)));
+        this->mesh->get_armature()->set_bone_transformation(1, glm::rotate(glm::mat4(1.0), float(rand() * M_PI), glm::vec3(0,0,1)));
+        this->mesh->get_armature()->build_frame_matrices();
+        this->mesh->get_armature()->build_glsl_matrices();
+    }
 }
 
 void Object::draw() {
@@ -124,6 +138,20 @@ void Object::load() {
         this->mesh->bind();
         this->shader->bind_uniforms_and_attributes();
         this->mesh->unbind();
+    }
+}
+
+void Object::update(double dt) {
+    if(this->mesh->get_type() & Mesh::MESH_ARMATURE) {
+        angle += dt;
+
+        if(angle > 2.0 * M_PI) {
+            angle -= 2.0 * M_PI;
+        }
+        glm::mat4 rot_mat = glm::rotate(glm::mat4(1.0), (float)this->angle, glm::vec3(0,0,1));
+        this->mesh->get_armature()->set_bone_transformation(2, rot_mat);
+        this->mesh->get_armature()->build_glsl_matrices();
+        this->properties[this->rig_idx].set_value(&this->mesh->get_armature()->get_glsl_matrices()[0][0][0]);
     }
 }
 

@@ -42,6 +42,8 @@ private:
 
     std::vector<float> weights; //! < vector holding weights
 
+    unsigned int id;
+
 public:
 
     /**
@@ -69,8 +71,14 @@ public:
      *
      * @param[in]  _offset_matrix  The offset matrix
      */
-    inline void set_offset_matrix(const glm::mat4& _offset_matrix) {
-        this->matrix_offset = _offset_matrix;
+    void set_offset_matrix(const glm::mat4& _offset_matrix);
+
+    inline void set_frame_matrix(const glm::mat4& _frame_matrix) {
+        this->matrix_frame = _frame_matrix;
+    }
+
+    inline void set_idx(unsigned int _id) {
+        this->id = _id;
     }
 
     /**
@@ -80,6 +88,10 @@ public:
      */
     inline void set_weights(const std::vector<float>& _weights) {
         this->weights = _weights;
+    }
+
+    inline unsigned int get_idx() const {
+        return this->id;
     }
 
     /**
@@ -137,6 +149,8 @@ class Armature {
 
 private:
     std::vector<Bone*> bones;        //!< vector holding all bones in armature
+    std::vector<glm::mat4> glsl_matrices;
+    std::vector<glm::mat4> bone_transformations;
 
 public:
 
@@ -155,6 +169,16 @@ public:
      * @return     pointer to the bone instance
      */
     Bone* add_bone(const glm::mat4& frame, const std::string& _name, const Bone* parent_id);
+
+    unsigned int find_bone_by_name(const std::string& _name) const;
+
+    void build_frame_matrices();
+
+    void build_glsl_matrices();
+
+    inline void set_bone_transformation(unsigned int idx, const glm::mat4& m) {
+        this->bone_transformations[idx] = m;
+    }
 
     /**
      * @brief      get number of bones in armature
@@ -182,6 +206,10 @@ public:
      * @return     The weights vector.
      */
     std::vector<float> get_weights_vector() const;
+
+    const std::vector<glm::mat4>& get_glsl_matrices() const {
+        return this->glsl_matrices;
+    }
 
     /**
      * @brief      print list of bones

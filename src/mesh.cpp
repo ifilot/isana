@@ -183,22 +183,6 @@ void Mesh::load_mesh_from_obj_file(const std::string& filename) {
 
 
 void Mesh::load_mesh_from_x_file(const std::string& filename) {
-    /*
-     * file organisation:
-     *
-     * > start reading at Frame Root
-     *
-     * > 1 transformation matrix of root
-     * > 2 transformation matrix of object
-     * > 3 mesh (number of positions)
-     * > 4 polygons (3,4,5,6) with indices
-     * > 5 normals
-     * > 6 polygons (3,4,5,6) with indices
-     * > 7 texture coordinates
-     * > 8 XSkinMeshHeader ??
-     * > 9 skin weights per bone (indices --> weights --> matrix)
-     */
-
      // open file
     std::ifstream f;
     f.open(filename.c_str());
@@ -220,6 +204,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
 
     std::vector<std::vector<float>> _weights;
     std::vector<glm::mat4> _offset_matrices;
+    std::vector<std::string> bone_names;
 
     boost::regex regex_open_frame("^\\s*Frame Armature_([A-Za-z_0-9]+) \\{");
     boost::regex regex_close_frame("^\\s*\\}");
@@ -227,7 +212,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
     boost::regex regex_normals("^\\s*MeshNormals \\{ ");
     boost::regex regex_textures("^\\s*MeshTextureCoords \\{ ");
     boost::regex regex_skinweight("^\\s*SkinWeights \\{");
-    boost::regex regex_bone_name("^\\s*\"Armature_([A-Za-z_0-9]+)\",");
+    boost::regex regex_bone_name("^\\s*\\\"Armature_([A-Za-z_0-9]+)\\\";");
     boost::regex regex_number("^\\s*([0-9]+)[;,]");
     boost::regex regex_value("^\\s*([0-9.-]+)[;,]");
 
@@ -380,6 +365,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                 getline(f, line); // read bone name
                 boost::regex_match(line, what2, regex_bone_name);
                 std::string name = what2[1];
+                bone_names.push_back(name);
 
                 getline(f, line); // read number of vertices
                 boost::regex_match(line, what2, regex_number);
@@ -404,13 +390,19 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                 _offset_matrices.push_back(this->read_matrix(&f));
 
                 // collect
-                _weights.push_back(std::vector<float>(_positions.size(), 0.0));
+                _weights.push_back(std::vector<float>(_positions.size(), 0.0f));
                 for(unsigned int i=0; i<nr_vertices; i++) {
-                    _weights[_weights.size()-1][idx[i]] = weights[i];
+                    _weights.back()[idx[i]] = weights[i];
                 }
             }
         }
 
+    }
+
+    // also rebuild weights vectors
+    std::vector<std::vector<float>> weights_rebuild;
+    for(unsigned int i=0; i<_offset_matrices.size(); i++) {
+        weights_rebuild.push_back(std::vector<float>(_position_indices.size(), 0.0));
     }
 
     // process all results
@@ -422,12 +414,19 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             this->texture_coordinates.push_back(_texture_coordinates[_position_indices[i]]);
             this->texture_coordinates.back()[1] = 1.0f - this->texture_coordinates.back()[1];
             this->normals.push_back(_normal_coordinates[_normal_indices[i]]);
+
+            // also rebuild weights
+            for(unsigned int j=0; j<_offset_matrices.size(); j++) {
+                weights_rebuild[j][i] = _weights[j][_position_indices[i]];
+            }
         }
     }
 
     for(unsigned int i=0; i<_offset_matrices.size(); i++) {
-        this->armature->get_bone_by_idx(i)->set_offset_matrix(_offset_matrices[i]);
-        this->armature->get_bone_by_idx(i)->set_weights(_weights[i]);
+        const unsigned int bone_id = this->armature->find_bone_by_name(bone_names[i]);
+
+        this->armature->get_bone_by_idx(bone_id)->set_offset_matrix(_offset_matrices[i]);
+        this->armature->get_bone_by_idx(bone_id)->set_weights(weights_rebuild[i]);
     }
 }
 
@@ -540,6 +539,7 @@ void Mesh::static_load() {
 
             const std::vector<float> weights = this->armature->get_weights_vector();
             std::cout << weights.size() << std::endl;
+            std::cout << this->armature->get_nr_bones() << std::endl;
 
              // up the vertex_id
             vertex_id++;

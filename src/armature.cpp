@@ -30,9 +30,21 @@
  *
  */
 Bone::Bone(const glm::mat4& frame, const std::string& _name, const Bone* _parent) {
-    this->matrix_frame = frame;
+    this->matrix_frame = glm::transpose(frame);
     this->name = _name;
     this->parent = _parent;
+}
+
+/**
+ * @brief      Set the offset matrix.
+ *
+ * @param[in]  _offset_matrix  The offset matrix
+ */
+void Bone::set_offset_matrix(const glm::mat4& _offset_matrix) {
+    static const glm::mat4 T0(glm::rotate(glm::mat4(1.0), -(float)M_PI / 2.0f, glm::vec3(1,0,0)));
+    static const glm::mat4 T0_inv = glm::inverse(T0);
+
+    this->matrix_offset = glm::transpose(T0_inv * _offset_matrix);
 }
 
 /**
@@ -53,8 +65,54 @@ Armature::Armature() {
  */
 Bone* Armature::add_bone(const glm::mat4& frame, const std::string& _name, const Bone* _parent) {
     this->bones.push_back(new Bone(frame, _name, _parent));
+    this->glsl_matrices.push_back(glm::mat4(1.0));
+    this->bone_transformations.push_back(glm::mat4(1.0));
+    this->bones.back()->set_idx(this->bones.size()-1);
 
     return this->bones.back();
+}
+
+unsigned int Armature::find_bone_by_name(const std::string& _name) const {
+    for(unsigned int i=0; i<this->bones.size(); i++) {
+        if(this->bones[i]->get_name().compare(_name) == 0) {
+            return i;
+        }
+    }
+
+    std::cerr << "Could not find bone: " << _name << std::endl;
+    std::cerr << "Incorrect mesh file. Quitting." << std::endl;
+    exit(-1);
+}
+
+void Armature::build_frame_matrices() {
+    static const glm::mat4 T0(glm::rotate(glm::mat4(1.0), (float)M_PI / 2.0f, glm::vec3(1,0,0)));
+
+    for(unsigned int i=0; i<this->bones.size(); i++) {
+        glm::mat4 offset_matrix_inv = glm::inverse(this->bones[i]->get_offset_matrix());
+
+        if(this->bones[i]->get_parent()) {
+            glm::mat4 offset_matrix_parent = this->bones[i]->get_parent()->get_offset_matrix();
+            this->bones[i]->set_frame_matrix(offset_matrix_inv * offset_matrix_parent);
+        } else {
+            this->bones[i]->set_frame_matrix(offset_matrix_inv);
+        }
+    }
+}
+
+void Armature::build_glsl_matrices() {
+    for(unsigned int i=0; i<this->bones.size(); i++) {
+        // set base matrix
+        glm::mat4 m = this->bones[i]->get_offset_matrix();
+        const Bone* b = this->bones[i];
+
+        while(b) {
+            m *= this->bone_transformations[b->get_idx()];
+            m *= b->get_frame_matrix();
+            b = b->get_parent();
+        }
+
+        this->glsl_matrices[i] = m;
+    }
 }
 
 /**
@@ -90,6 +148,10 @@ void Armature::print_bone_list() const {
         std::cout << "Offset matrix" << std::endl;
         for(unsigned int j=0; j<4; j++) {
             std::cout << glm::to_string(this->bones[i]->get_offset_matrix()[j]) << std::endl;
+        }
+        std::cout << "Vertex multiplication matrix" << std::endl;
+        for(unsigned int j=0; j<4; j++) {
+            std::cout << glm::to_string(this->glsl_matrices[i][j]) << std::endl;
         }
         std::cout << std::endl;
     }
