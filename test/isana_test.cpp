@@ -39,4 +39,7 @@ BOOST_AUTO_TEST_CASE(meshtest2) {
     BOOST_CHECK(mesh.get_nr_positions() == 435);
     BOOST_CHECK(mesh.get_nr_normals() == 435);
     BOOST_CHECK(mesh.get_nr_texture_coordinates() == 435);
+
+    const Armature* armature = mesh.get_armature();
+    BOOST_CHECK(armature->get_nr_bones() == 3);
 }
