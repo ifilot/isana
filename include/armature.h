@@ -101,6 +101,24 @@ public:
     }
 
     /**
+     * @brief      Get the frame matrix.
+     *
+     * @return     Frame matrix.
+     */
+    inline const glm::mat4& get_frame_matrix() const {
+        return this->matrix_frame;
+    }
+
+    /**
+     * @brief      Get the offset matrix.
+     *
+     * @return     Offset matrix.
+     */
+    inline const glm::mat4& get_offset_matrix() const {
+        return this->matrix_offset;
+    }
+
+    /**
      * @brief      Get the parent.
      *
      * @return     The parent.

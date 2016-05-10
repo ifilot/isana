@@ -401,7 +401,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                     }
                 }
 
-                _offset_matrices.push_back(this->read_frame_transform_matrix(&f));
+                _offset_matrices.push_back(this->read_matrix(&f));
 
                 // collect
                 _weights.push_back(std::vector<float>(_positions.size(), 0.0));
@@ -425,7 +425,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
         }
     }
 
-    for(unsigned int i; i<_offset_matrices.size(); i++) {
+    for(unsigned int i=0; i<_offset_matrices.size(); i++) {
         this->armature->get_bone_by_idx(i)->set_offset_matrix(_offset_matrices[i]);
         this->armature->get_bone_by_idx(i)->set_weights(_weights[i]);
     }
@@ -629,26 +629,33 @@ glm::mat4 Mesh::read_frame_transform_matrix(std::ifstream* f) {
     // skip first line
     getline(*f, line);
     boost::smatch what1;
-
     boost::regex regex_frame_transform_matrix("^\\s*FrameTransformMatrix {");
 
     if (boost::regex_match(line, what1, regex_frame_transform_matrix)) {
-        glm::mat4 mat;
-        boost::regex regex_frame_transform_matrix("^\\s*([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+)[,;]+");
-        // read matrix
-        for(unsigned int i=0; i<4; i++) {
-            getline(*f, line);
-            if (boost::regex_match(line, what1, regex_frame_transform_matrix)) {
-                for(unsigned int j=0; j<4; j++) {
-                    mat[i][j] = boost::lexical_cast<float>(what1[j+1]);
-                }
-            }
-        }
-
-        // discard next line and return
-        getline(*f, line);
-        return mat;
+        return this->read_matrix(f);
     }
 
     return glm::mat4(0.0);
+}
+
+glm::mat4 Mesh::read_matrix(std::ifstream* f) {
+    glm::mat4 mat;
+    boost::regex regex_frame_transform_matrix("^\\s*([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+)[,;]+");
+    boost::smatch what1;
+    std::string line;
+
+    // read matrix
+    for(unsigned int i=0; i<4; i++) {
+        getline(*f, line);
+        if (boost::regex_match(line, what1, regex_frame_transform_matrix)) {
+            for(unsigned int j=0; j<4; j++) {
+                mat[i][j] = boost::lexical_cast<float>(what1[j+1]);
+            }
+        }
+    }
+
+    // discard next line and return
+    getline(*f, line);
+
+    return mat;
 }

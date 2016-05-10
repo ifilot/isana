@@ -42,4 +42,5 @@ BOOST_AUTO_TEST_CASE(meshtest2) {
 
     const Armature* armature = mesh.get_armature();
     BOOST_CHECK(armature->get_nr_bones() == 3);
+    armature->print_bone_list();
 }

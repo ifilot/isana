@@ -30,10 +30,7 @@
  *
  */
 Bone::Bone(const glm::mat4& frame, const std::string& _name, const Bone* _parent) {
-
-    static const glm::mat4 T0(glm::rotate(glm::mat4(1.0), (float)M_PI / 2.0f, glm::vec3(1,0,0)));
-
-    this->matrix_frame = T0 * frame;
+    this->matrix_frame = frame;
     this->name = _name;
     this->parent = _parent;
 }
@@ -86,6 +83,15 @@ std::vector<float> Armature::get_weights_vector() const {
 void Armature::print_bone_list() const {
     for(unsigned int i=0; i<this->bones.size(); i++) {
         std::cout << get_bone_path(bones[i]) << std::endl;
+        std::cout << "Frame matrix" << std::endl;
+        for(unsigned int j=0; j<4; j++) {
+            std::cout << glm::to_string(this->bones[i]->get_frame_matrix()[j]) << std::endl;
+        }
+        std::cout << "Offset matrix" << std::endl;
+        for(unsigned int j=0; j<4; j++) {
+            std::cout << glm::to_string(this->bones[i]->get_offset_matrix()[j]) << std::endl;
+        }
+        std::cout << std::endl;
     }
 }
 

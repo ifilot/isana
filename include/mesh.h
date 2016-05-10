@@ -98,6 +98,8 @@ private:
 
     glm::mat4 read_frame_transform_matrix(std::ifstream* f);
 
+    glm::mat4 read_matrix(std::ifstream* f);
+
     enum {
         POSITION_VB,
         NORMAL_VB,
