@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -20,14 +20,43 @@
 
 #include "object.h"
 
-ObjectProperty::ObjectProperty(const std::string& _name, unsigned int size) {
+ObjectProperty::ObjectProperty(const std::string& _name, unsigned int _type, unsigned int _size) {
     this->name = _name;
-    this->val.resize(size, 0.0f);
-    this->val_size = size;
+
+    switch(_type) {
+        case ShaderUniform::MAT4:
+            this->base_size = 16;
+            break;
+        case ShaderUniform::VEC3:
+            this->base_size = 3;
+            break;
+        case ShaderUniform::TEXTURE:
+            this->base_size = 1;
+            break;
+        case  ShaderUniform::UINT:
+            this->base_size = 1;
+            break;
+        case  ShaderUniform::FLOAT:
+            this->base_size = 1;
+            break;
+        case  ShaderUniform::FRAME_MATRIX:
+            this->base_size = 16;
+            break;
+        case  ShaderUniform::OFFSET_MATRIX:
+            this->base_size = 16;
+            break;
+        default:
+            this->base_size = 1;
+        break;
+    }
+
+    this->val.resize(_size * base_size, 0.0f);
+    this->size = _size;
+    this->type = _type;
 }
 
 void ObjectProperty::set_value(const float* _val) {
-    for(unsigned int i=0; i<this->val_size; i++) {
+    for(unsigned int i=0; i<this->size * this->base_size; i++) {
         this->val[i] = _val[i];
     }
 }
@@ -39,9 +68,9 @@ Object::Object(Shader* _shader, const Mesh* _mesh) {
     this->scale = glm::mat4(1.0f);
     this->position = glm::vec3(0.0f);
 
-    this->add_property("model", 16);
-    this->add_property("view", 16);
-    this->add_property("mvp", 16);
+    this->add_property("model", ShaderUniform::MAT4, 1);
+    this->add_property("view", ShaderUniform::MAT4, 1);
+    this->add_property("mvp", ShaderUniform::MAT4, 1);
 }
 
 void Object::draw() {
@@ -69,15 +98,7 @@ void Object::draw() {
 void Object::load() {
     // load uniforms
     for(unsigned int i=0; i<this->properties.size(); i++) {
-        if(this->properties[i].get_size() == 1) {
-            this->shader->add_uniform(ShaderUniform::TEXTURE, this->properties[i].get_name());
-        }
-        if(this->properties[i].get_size() == 3) {
-            this->shader->add_uniform(ShaderUniform::VEC3, this->properties[i].get_name());
-        }
-        if(this->properties[i].get_size() == 16) {
-            this->shader->add_uniform(ShaderUniform::MAT4, this->properties[i].get_name());
-        }
+        this->shader->add_uniform(this->properties[i].get_type(), this->properties[i].get_name(), this->properties[i].get_size());
     }
 
     // load attributes (depend on mesh)
@@ -94,6 +115,9 @@ void Object::load() {
     if(mesh_type & Mesh::MESH_TEXTURE_COORDINATES) {
         this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "texture_coordinate");
     }
+    if(mesh_type & Mesh::MESH_ARMATURE) {
+        this->shader->add_attribute(ShaderAttribute::WEIGHT, "weights");
+    }
 
     if(!this->shader->is_loaded()) {
         // corresponding mesh needs to be bound when vertex array gets loaded
@@ -103,8 +127,8 @@ void Object::load() {
     }
 }
 
-unsigned int Object::add_property(const std::string& _name, unsigned int size) {
-    this->properties.push_back(ObjectProperty(_name, size));
+unsigned int Object::add_property(const std::string& _name, unsigned int type, unsigned int size) {
+    this->properties.push_back(ObjectProperty(_name, type, size));
     return this->properties.size() - 1;
 }
 

@@ -49,3 +49,18 @@ void Armature::print_bone_list() const {
         std::cout << get_bone_path(bones[i]) << std::endl;
     }
 }
+
+std::vector<float> Armature::get_weights_vector() const {
+    const unsigned int nr_bones = this->get_nr_bones();
+    const unsigned int nr_vertices = this->bones[0]->get_weights_size();
+
+    std::vector<float> weights(nr_bones * nr_vertices, 0.0f);
+
+    for(unsigned int i=0; i<nr_vertices; i++) {
+        for(unsigned int j=0; j<nr_bones; j++) {
+            weights[i * nr_bones + j] = this->bones[j]->get_weights()[i];
+        }
+    }
+
+    return weights;
+}

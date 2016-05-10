@@ -21,9 +21,11 @@
 #include "mesh.h"
 
 Mesh::Mesh() {
+    this->armature = NULL;
 }
 
 Mesh::Mesh(const std::string& filename) {
+    this->armature = NULL;
     this->load_mesh_from_file(filename);
 }
 
@@ -232,7 +234,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
     unsigned int level = 0;
     const Bone* bone_ptr = NULL;
 
-    Armature armature;
+    this->armature = new Armature();
     reading_state |= rs_bones;
     reading_state |= rs_mesh;
 
@@ -248,7 +250,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
 
                 // root bone encountered
                 if(level > 0) {
-                    bone_ptr = armature.add_bone(mat, what1[1], bone_ptr);
+                    bone_ptr = this->armature->add_bone(mat, what1[1], bone_ptr);
                 }
                 continue;
             }
@@ -424,7 +426,8 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
     }
 
     for(unsigned int i; i<_offset_matrices.size(); i++) {
-        armature.get_bone_by_idx(i)->set_offset_matrix(_offset_matrices[i]);
+        this->armature->get_bone_by_idx(i)->set_offset_matrix(_offset_matrices[i]);
+        this->armature->get_bone_by_idx(i)->set_weights(_weights[i]);
     }
 }
 
@@ -529,6 +532,29 @@ void Mesh::static_load() {
         glVertexAttribPointer(vertex_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
+    if(this->armature) {
+        if(this->armature->get_nr_bones() > 0) {
+            /*
+             * BONE WEIGHTS
+             */
+
+            const std::vector<float> weights = this->armature->get_weights_vector();
+            std::cout << weights.size() << std::endl;
+
+             // up the vertex_id
+            vertex_id++;
+            // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[WEIGHTS_VB]);
+            // fill the buffer with data
+            glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(float), &weights[0], GL_STATIC_DRAW);
+
+            // specifies the generic vertex attribute of index 0 to be enabled
+            glEnableVertexAttribArray(vertex_id);
+            // define an array of generic vertex attribute data
+            glVertexAttribPointer(vertex_id, this->armature->get_nr_bones(), GL_FLOAT, GL_FALSE, 0, 0);
+        }
+    }
+
     /*
      * INDICES_VB
      */
@@ -574,7 +600,19 @@ unsigned int Mesh::get_type() const {
         type |= this->MESH_TEXTURE_COORDINATES;
     }
 
+    if(this->get_bone_size() > 0) {
+        type |= this->MESH_ARMATURE;
+    }
+
     return type;
+}
+
+unsigned int Mesh::get_bone_size() const {
+    if(this->armature == NULL) {
+        return 0;
+    } else {
+        return this->armature->get_nr_bones();
+    }
 }
 
 void Mesh::bind() const {

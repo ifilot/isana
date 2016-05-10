@@ -31,7 +31,7 @@ ObjectsEngine::ObjectsEngine() {
     this->add_mesh("assets/meshes/sphere.mesh");
     this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
     this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 0.5f));
-    prop_id = this->objects.back()->add_property("object_color", 3);
+    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
     this->objects.back()->set_property_value(prop_id, &glm::vec3(0,0,0)[0]);
     this->objects.back()->load();
 
@@ -40,7 +40,7 @@ ObjectsEngine::ObjectsEngine() {
     // z-coordinate
     this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
     this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
-    prop_id = this->objects.back()->add_property("object_color", 3);
+    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
     this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(0,0,1)));
     this->objects.back()->load();
 
@@ -48,7 +48,7 @@ ObjectsEngine::ObjectsEngine() {
     this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
     this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
     this->objects.back()->set_rotation_matrix(glm::rotate(-(float)M_PI / 2.0f, glm::vec3(1.0f,0.0f,0.0f)));
-    prop_id = this->objects.back()->add_property("object_color", 3);
+    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
     this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(0,1,0)));
     this->objects.back()->load();
 
@@ -56,7 +56,7 @@ ObjectsEngine::ObjectsEngine() {
     this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
     this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
     this->objects.back()->set_rotation_matrix(glm::rotate((float)M_PI / 2.0f, glm::vec3(0.0f,1.0f,0.0f)));
-    prop_id = this->objects.back()->add_property("object_color", 3);
+    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
     this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(1,0,0)));
     this->objects.back()->load();
 
@@ -81,7 +81,7 @@ ObjectsEngine::ObjectsEngine() {
             float z = Terrain::get().get_height(x,y);
 
             this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-            prop_id = this->objects.back()->add_property("tex", 1);
+            prop_id = this->objects.back()->add_property("tex", ShaderUniform::TEXTURE, 1);
             this->objects.back()->set_position(glm::vec3(x, y, z));
             this->objects.back()->load();
        }
@@ -106,6 +106,8 @@ unsigned int ObjectsEngine::add_shader(const std::string& filename) {
 
 unsigned int ObjectsEngine::add_mesh(const std::string& filename) {
     this->meshes.push_back(new Mesh(filename));
+
+    std::cout << filename << std::endl;
 
     this->meshes.back()->static_load();
 

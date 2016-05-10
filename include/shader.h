@@ -31,7 +31,7 @@
 
 class ShaderUniform {
 public:
-    ShaderUniform(unsigned int _type, const std::string& _name);
+    ShaderUniform(unsigned int _type, const std::string& _name, unsigned int _size);
 
     void specify_value(float* val);
 
@@ -45,10 +45,18 @@ public:
         return this->type;
     }
 
+    inline unsigned int get_size() const {
+        return this->size;
+    }
+
     enum {
         MAT4,
         VEC3,
         TEXTURE,
+        UINT,
+        FLOAT,
+        FRAME_MATRIX,
+        OFFSET_MATRIX,
 
         NUM_VAR_TYPES
     };
@@ -56,6 +64,7 @@ public:
 private:
     unsigned int type;                           //<! type of the variable
     std::string name;                            //<! name of the variable
+    unsigned int size;                           //<! size of the uniform
 };
 
 class ShaderAttribute {
@@ -67,6 +76,7 @@ public:
         NORMAL,
         COLOR,
         TEXTURE_COORDINATE,
+        WEIGHT,
 
         NUM_ATTR_TYPES
     };
@@ -88,7 +98,7 @@ class Shader{
 public:
     Shader(const std::string& filename);
 
-    void add_uniform(unsigned int type, std::string name);
+    void add_uniform(unsigned int type, std::string name, unsigned int size);
 
     void add_attribute(unsigned int type, std::string name);
 

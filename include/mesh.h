@@ -40,6 +40,7 @@
 
 class Mesh {
 private:
+    Armature* armature;
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec3> colors;
@@ -76,10 +77,13 @@ public:
 
     unsigned int get_type() const;
 
+    unsigned int get_bone_size() const;
+
     static const unsigned int MESH_POSITIONS           = 1 << 0;
     static const unsigned int MESH_NORMALS             = 1 << 1;
     static const unsigned int MESH_COLORS              = 1 << 2;
     static const unsigned int MESH_TEXTURE_COORDINATES = 1 << 3;
+    static const unsigned int MESH_ARMATURE            = 1 << 4;
 
 private:
     void load_mesh_from_file(const std::string& filename);
@@ -95,6 +99,7 @@ private:
         NORMAL_VB,
         COLOR_VB,
         TEXTURE_VB,
+        WEIGHTS_VB,
         INDICES_VB,
 
         NUM_BUFFERS

@@ -37,7 +37,7 @@
  */
 class ObjectProperty {
 public:
-    ObjectProperty(const std::string& _name, unsigned int size);
+    ObjectProperty(const std::string& _name, unsigned int _type, unsigned int _size);
 
     void set_value(const float* val);
 
@@ -50,13 +50,21 @@ public:
     }
 
     inline unsigned int get_size() const {
-        return this->val_size;
+        return this->size;
+    }
+
+    inline unsigned int get_type() const {
+        return this->type;
     }
 
 private:
     std::vector<float> val;
-    unsigned int val_size;
+
+    unsigned int size;
+    unsigned int base_size;
+
     std::string name;
+    unsigned int type;
 };
 
 class Object {
@@ -68,7 +76,7 @@ public:
 
     void load();
 
-    unsigned int add_property(const std::string& _name, unsigned int size);
+    unsigned int add_property(const std::string& _name, unsigned int _type, unsigned int _size);
 
     void set_property_value(unsigned int prop_id, const float* val);
 

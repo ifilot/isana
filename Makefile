@@ -25,7 +25,7 @@ TEST = $(EXEC)-test
 # use the GNU C++ compiler
 CXX = g++
 # use some optimization, report all warnings and enable debugging
-OPTS = -O0 -Wall -Wno-write-strings
+OPTS = -O0 -Wall -Wno-write-strings -g
 # add compile flags
 CFLAGS = $(OPTS) -std=c++0x
 # specify link flags here

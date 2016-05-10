@@ -40,6 +40,8 @@ private:
                                 //! space
     std::string name;           //! < bone name
 
+    std::vector<float> weights; //! < vector holding weights
+
 public:
 
     /**
@@ -59,6 +61,18 @@ public:
 
     inline void set_offset_matrix(const glm::mat4& _offset_matrix) {
         this->matrix_offset = _offset_matrix;
+    }
+
+    inline void set_weights(const std::vector<float>& _weights) {
+        this->weights = _weights;
+    }
+
+    inline const std::vector<float>& get_weights() {
+        return this->weights;
+    }
+
+    inline unsigned int get_weights_size() const {
+        return this->weights.size();
     }
 
     inline const Bone* get_parent() const {
@@ -92,6 +106,8 @@ public:
     inline Bone* get_bone_by_idx(unsigned int idx) const {
         return this->bones[idx];
     }
+
+    std::vector<float> get_weights_vector() const;
 
 private:
 

@@ -29,9 +29,10 @@ static std::string load_shader(const std::string& filename);
 // check the shader for errors
 static void check_shader_error(GLuint shader, GLuint flag, bool is_program, const std::string& error_message);
 
-ShaderUniform::ShaderUniform(unsigned int _type, const std::string& _name) {
+ShaderUniform::ShaderUniform(unsigned int _type, const std::string& _name, unsigned int _size) {
     this->type = _type;
     this->name = _name;
+    this->size = _size;
 }
 
 ShaderAttribute::ShaderAttribute(unsigned int _type, const std::string& _name) {
@@ -57,8 +58,8 @@ Shader::Shader(const std::string& filename) {
     this->flag_loaded = false;
 }
 
-void Shader::add_uniform(unsigned int type, std::string name) {
-    this->shader_uniforms.push_back(ShaderUniform(type, name));
+void Shader::add_uniform(unsigned int type, std::string name, unsigned int size) {
+    this->shader_uniforms.push_back(ShaderUniform(type, name, size));
 }
 
 void Shader::add_attribute(unsigned int type, std::string name) {
@@ -91,17 +92,26 @@ void Shader::bind_uniforms_and_attributes() {
 void Shader::set_uniform(unsigned int uniform_id, const float* val) {
     switch(this->shader_uniforms[uniform_id].get_type()) {
         case ShaderUniform::MAT4:
-            glUniformMatrix4fv(m_uniforms[uniform_id], 1, GL_FALSE, val);
-            break;
+            glUniformMatrix4fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), GL_FALSE, val);
+        break;
         case ShaderUniform::VEC3:
-            glUniform3fv(m_uniforms[uniform_id], 1, val);
-            break;
+            glUniform3fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), val);
+        break;
         case  ShaderUniform::TEXTURE:
             glUniform1i(m_uniforms[uniform_id], 0);
-            break;
+        break;
+        case  ShaderUniform::FLOAT:
+            glUniform1f(m_uniforms[uniform_id], val[0]);
+        break;
+        case  ShaderUniform::FRAME_MATRIX:
+            glUniformMatrix4fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), GL_FALSE, val);
+        break;
+        case  ShaderUniform::OFFSET_MATRIX:
+            glUniformMatrix4fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), GL_FALSE, val);
+        break;
         default:
             // do nothing
-            break;
+        break;
     }
 }
 
