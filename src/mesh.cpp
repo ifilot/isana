@@ -252,6 +252,12 @@ void Mesh::center() {
     }
 }
 
+Mesh::~Mesh() {
+    if(this->armature) {
+        delete this->armature;
+    }
+}
+
 /**
  * @brief      load Mesh from file
  *
@@ -488,8 +494,8 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                     boost::smatch what2;
                     if(boost::regex_match(line, what2, regex_vec3)) {
                         _normal_coordinates.push_back(glm::vec3(boost::lexical_cast<float>(what2[1]),
-                                                       boost::lexical_cast<float>(what2[2]),
-                                                       boost::lexical_cast<float>(what2[3])
+                                                                boost::lexical_cast<float>(what2[2]),
+                                                                boost::lexical_cast<float>(what2[3])
                                                        )
                                             );
                     }

@@ -255,6 +255,8 @@ public:
      */
     void center();
 
+    ~Mesh();
+
 private:
     /**
      * @brief      load Mesh from file

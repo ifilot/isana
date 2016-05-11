@@ -86,6 +86,8 @@ Object::Object(Shader* _shader, const Mesh* _mesh) {
     this->mesh = _mesh;
     this->scale = glm::mat4(1.0f);
     this->position = glm::vec3(0.0f);
+    this->angle = 0.0;
+    this->rig_idx = 0;
 
     this->add_property("model", ShaderUniform::MAT4, 1);
     this->add_property("view", ShaderUniform::MAT4, 1);

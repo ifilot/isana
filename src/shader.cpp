@@ -62,7 +62,7 @@ void Shader::add_uniform(unsigned int type, std::string name, unsigned int size)
     this->shader_uniforms.push_back(ShaderUniform(type, name, size));
 }
 
-void Shader::add_attribute(unsigned int type, std::string name) {
+void Shader::add_attribute(unsigned int type, const std::string& name) {
     this->shader_attributes.push_back(ShaderAttribute(type, name));
 }
 

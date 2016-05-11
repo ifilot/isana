@@ -100,7 +100,7 @@ public:
 
     void add_uniform(unsigned int type, std::string name, unsigned int size);
 
-    void add_attribute(unsigned int type, std::string name);
+    void add_attribute(unsigned int type, const std::string& name);
 
     void bind_uniforms_and_attributes();
 

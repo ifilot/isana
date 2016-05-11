@@ -24,7 +24,7 @@ void main() {
 
     for(int i=0; i<3; i++) {
         pos += weights[i] * vec4(position, 1.0) * armature[i];
-        nor += weights[i] * vec4(normal, 1.0) * armature[i];
+        nor += weights[i] * vec4(normal, 0.0) * armature[i];
     }
 
     vec4 new_pos =vec4(pos.xyz, 1.0);
