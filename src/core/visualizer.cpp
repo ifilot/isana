@@ -94,6 +94,8 @@ void Visualizer::run() {
         Display::get().close_frame();  /* close the frame */
 
         Terrain::get();
+
+        FontWriter::get();
     }
 }
 

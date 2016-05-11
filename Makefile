@@ -28,8 +28,10 @@ CXX = g++
 OPTS = -O0 -Wall -Wno-write-strings -g
 # add compile flags
 CFLAGS = $(OPTS) -std=c++0x
+CFLAGS += `pkg-config --cflags freetype2 libpng`
 # specify link flags here
-LDFLAGS = `pkg-config --libs --static glfw3 glew` -lpng
+LDFLAGS = `pkg-config --libs --static glfw3 glew`
+LDFLAGS += `pkg-config --libs freetype2 libpng`
 
 # set a list of directories
 OBJDIR  = ./obj
@@ -55,6 +57,7 @@ accessoires/perlin_noise.cpp \
 core/armature.cpp \
 core/camera.cpp \
 core/display.cpp \
+core/font_writer.cpp \
 core/mesh.cpp \
 core/object.cpp \
 core/shader.cpp \

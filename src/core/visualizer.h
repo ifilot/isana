@@ -28,6 +28,7 @@
 
 #include "environment/terrain.h"
 #include "objects/objects_engine.h"
+#include "core/font_writer.h"
 
 /**
  * @class Visualizer class

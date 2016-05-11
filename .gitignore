@@ -37,3 +37,4 @@ bin/isana-test
 *.chg
 
 .DS_Store
+./test.png
