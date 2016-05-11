@@ -20,71 +20,243 @@
 
 #include "mesh.h"
 
+/**
+ * @brief      Mesh constructor
+ */
 Mesh::Mesh() {
     this->armature = NULL;
 }
 
+/**
+ * @brief      Mesh constructor method using an input file
+ *
+ * @param[in]  filename  The filename
+ */
 Mesh::Mesh(const std::string& filename) {
     this->armature = NULL;
     this->load_mesh_from_file(filename);
 }
 
-void Mesh::set_indices(const std::vector<unsigned int>& _indices) {
-    this->indices = _indices;
+/**
+ * @brief      load the mesh on the GPU
+ */
+void Mesh::static_load() {
+    // load the mesh into memory
+    unsigned int size = this->indices.size();
+
+    unsigned int vertex_id = 0;
+
+    // generate a vertex array object and store it in the pointer
+    glGenVertexArrays(1, &this->m_vertex_array_object);
+    glBindVertexArray(this->m_vertex_array_object);
+
+    // generate a number of buffers (blocks of data on the GPU)
+    glGenBuffers(NUM_BUFFERS, this->m_vertex_array_buffers);
+
+    /*
+     * POSITIONS
+     */
+
+    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[POSITION_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ARRAY_BUFFER, this->positions.size() * 3 * sizeof(float), &this->positions[0][0], GL_STATIC_DRAW);
+
+    // specifies the generic vertex attribute of index 0 to be enabled
+    glEnableVertexAttribArray(vertex_id);
+    // define an array of generic vertex attribute data
+    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    /*
+     * NORMALS
+     */
+
+    // up the vertex_id
+     vertex_id++;
+    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ARRAY_BUFFER, this->normals.size() * 3 * sizeof(float), &this->normals[0][0], GL_STATIC_DRAW);
+
+    // specifies the generic vertex attribute of index 0 to be enabled
+    glEnableVertexAttribArray(vertex_id);
+    // define an array of generic vertex attribute data
+    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+    if(this->colors.size() > 0) {
+        /*
+         * COLORS
+         */
+
+         // up the vertex_id
+        vertex_id++;
+        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
+        // fill the buffer with data
+        glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 3 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
+
+        // specifies the generic vertex attribute of index 0 to be enabled
+        glEnableVertexAttribArray(vertex_id);
+        // define an array of generic vertex attribute data
+        glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    if(this->texture_coordinates.size() > 0) {
+        /*
+         * TEXTURE COORDINATES
+         */
+
+         // up the vertex_id
+        vertex_id++;
+        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[TEXTURE_VB]);
+        // fill the buffer with data
+        glBufferData(GL_ARRAY_BUFFER, this->texture_coordinates.size() * 2 * sizeof(float), &this->texture_coordinates[0][0], GL_STATIC_DRAW);
+
+        // specifies the generic vertex attribute of index 0 to be enabled
+        glEnableVertexAttribArray(vertex_id);
+        // define an array of generic vertex attribute data
+        glVertexAttribPointer(vertex_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    if(this->armature) {
+        if(this->armature->get_nr_bones() > 0) {
+            /*
+             * BONE WEIGHTS
+             */
+            const std::vector<float> weights = this->armature->get_weights_vector();
+
+             // up the vertex_id
+            vertex_id++;
+            // bind a buffer identified by POSITION_VB and interpret this buffer as an array
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[WEIGHTS_VB]);
+            // fill the buffer with data
+            glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(float), &weights[0], GL_STATIC_DRAW);
+
+            // specifies the generic vertex attribute of index 0 to be enabled
+            glEnableVertexAttribArray(vertex_id);
+            // define an array of generic vertex attribute data
+            glVertexAttribPointer(vertex_id, this->armature->get_nr_bones(), GL_FLOAT, GL_FALSE, 0, 0);
+        }
+    }
+
+    /*
+     * INDICES_VB
+     */
+
+    // bind a buffer identified by INDICES_VB and interpret this buffer as an array
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertex_array_buffers[INDICES_VB]);
+    // fill the buffer with data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
+
+    // after this command, any commands that use a vertex array will
+    // no longer work
+    glBindVertexArray(0);
 }
 
-void Mesh::set_positions(const std::vector<glm::vec3>& _positions) {
-    this->positions = _positions;
+/**
+ * @brief      draw the mesh
+ */
+void Mesh::draw() const {
+    // load the vertex array
+    glBindVertexArray(m_vertex_array_object);
+
+    // draw the mesh using the indices
+    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+
+    // after this command, any commands that use a vertex array will
+    // no longer work
+    glBindVertexArray(0);
 }
 
-void Mesh::set_colors(const std::vector<glm::vec3>& _colors) {
-    this->colors = _colors;
+/**
+ * @brief      bind the vertex attribute array
+ */
+void Mesh::bind() const {
+    glBindVertexArray(this->m_vertex_array_object);
 }
 
-void Mesh::set_normals(const std::vector<glm::vec3>& _normals) {
-    this->normals = _normals;
+/**
+ * @brief      unbind the vertex attribute array
+ */
+void Mesh::unbind() const {
+    glBindVertexArray(0);
 }
 
-unsigned int Mesh::get_nr_indices() const {
-    return this->indices.size();
+/**
+ * @brief      Get the mesh type.
+ *
+ * @return     mesh type
+ */
+unsigned int Mesh::get_type() const {
+    unsigned int type = 0;
+
+    if(this->positions.size() > 0) {
+        type |= this->MESH_POSITIONS;
+    }
+
+    if(this->normals.size() > 0) {
+        type |= this->MESH_NORMALS;
+    }
+
+    if(this->colors.size() > 0) {
+        type |= this->MESH_COLORS;
+    }
+
+    if(this->texture_coordinates.size() > 0) {
+        type |= this->MESH_TEXTURE_COORDINATES;
+    }
+
+    if(this->get_bone_size() > 0) {
+        type |= this->MESH_ARMATURE;
+    }
+
+    return type;
 }
 
-unsigned int Mesh::get_nr_positions() const {
-    return this->positions.size();
+/**
+ * @brief      Get the bone size.
+ *
+ * @return     Bone size.
+ */
+unsigned int Mesh::get_bone_size() const {
+    if(this->armature == NULL) {
+        return 0;
+    } else {
+        return this->armature->get_nr_bones();
+    }
 }
 
-unsigned int Mesh::get_nr_normals() const {
-    return this->normals.size();
+/**
+ * @brief      center the vertex coordinates around the origin in model space
+ */
+void Mesh::center() {
+    double sum_x = 0.0;
+    double sum_y = 0.0;
+    double sum_z = 0.0;
+
+    for(unsigned int i=0; i<this->positions.size(); i++) {
+        sum_x += this->positions[i].x;
+        sum_y += this->positions[i].y;
+        sum_z += this->positions[i].z;
+    }
+
+    double n_items = (double)this->positions.size();
+    glm::vec3 center(sum_x / n_items,
+                     sum_y / n_items,
+                     sum_z / n_items);
+
+    for(unsigned int i=0; i<this->positions.size(); i++) {
+        this->positions[i] -= center;
+    }
 }
 
-unsigned int Mesh::get_nr_colors() const {
-    return this->colors.size();
-}
-
-unsigned int Mesh::get_nr_texture_coordinates() const {
-    return this->texture_coordinates.size();
-}
-
-const glm::vec3* Mesh::get_positions_start() const {
-    return &this->positions[0];
-}
-
-const glm::vec3* Mesh::get_normals_start() const {
-    return &this->normals[0];
-}
-
-const glm::vec3* Mesh::get_colors_start() const {
-    return &this->colors[0];
-}
-
-const glm::vec2* Mesh::get_texture_coordinates_start() const {
-    return &this->texture_coordinates[0];
-}
-
-const unsigned int* Mesh::get_indices_start() const {
-    return &this->indices[0];
-}
-
+/**
+ * @brief      load Mesh from file
+ *
+ * @param[in]  filename  The filename
+ */
 void Mesh::load_mesh_from_file(const std::string& filename) {
     // open file
     if(filename.back() == 'x') {
@@ -94,6 +266,11 @@ void Mesh::load_mesh_from_file(const std::string& filename) {
     }
 }
 
+/**
+ * @brief      load Mesh from an .obj file
+ *
+ * @param[in]  filename  The filename
+ */
 void Mesh::load_mesh_from_obj_file(const std::string& filename) {
     // open file
     std::ifstream f;
@@ -181,7 +358,11 @@ void Mesh::load_mesh_from_obj_file(const std::string& filename) {
     }
 }
 
-
+/**
+ * @brief      load Mesh from an .x file
+ *
+ * @param[in]  filename  The filename
+ */
 void Mesh::load_mesh_from_x_file(const std::string& filename) {
      // open file
     std::ifstream f;
@@ -248,7 +429,9 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             }
         }
 
-        // positions
+        //****************
+        // POSITIONS
+        //****************
         if(reading_state & rs_mesh) {
             if (boost::regex_search(line, regex_mesh)) {
                 reading_state &= ~rs_bones;
@@ -288,7 +471,9 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             continue;
         }
 
-        // normals
+        //****************
+        // NORMALS
+        //****************
         if(reading_state & rs_normals) {
             if (boost::regex_search(line, regex_normals)) {
                 reading_state &= ~rs_normals;
@@ -330,7 +515,9 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             continue;
         }
 
-        // texture_coordinates
+        //****************
+        // TEXTURE COORDINATES
+        //****************
         if(reading_state & rs_textures) {
             if (boost::regex_search(line, regex_textures)) {
                 reading_state &= ~rs_textures;
@@ -338,8 +525,6 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
                 getline(f, line); // read number of vertices
                 boost::regex_match(line, what1, regex_number);
                 const unsigned int nr_vertices = boost::lexical_cast<unsigned int>(what1[1]);
-
-                std::cout << nr_vertices << std::endl;
 
                 boost::regex regex_vec2("^\\s*([0-9.-]+)[ ;]+([0-9.-]+)[ ;,]+");
                 for(unsigned int i=0; i<nr_vertices; i++) {
@@ -356,6 +541,10 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
             reading_state |= rs_meshweight;
             continue;
         }
+
+        //****************
+        // WEIGHTS
+        //****************
 
         // look for occurrences of SkinWeights
         if(reading_state & rs_meshweight) {
@@ -430,199 +619,13 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
     }
 }
 
-void Mesh::center() {
-    double sum_x = 0.0;
-    double sum_y = 0.0;
-    double sum_z = 0.0;
-
-    for(unsigned int i=0; i<this->positions.size(); i++) {
-        sum_x += this->positions[i].x;
-        sum_y += this->positions[i].y;
-        sum_z += this->positions[i].z;
-    }
-
-    double n_items = (double)this->positions.size();
-    glm::vec3 center(sum_x / n_items,
-                     sum_y / n_items,
-                     sum_z / n_items);
-
-    for(unsigned int i=0; i<this->positions.size(); i++) {
-        this->positions[i] -= center;
-    }
-}
-
-void Mesh::static_load() {
-    // load the mesh into memory
-    unsigned int size = this->indices.size();
-
-    unsigned int vertex_id = 0;
-
-    // generate a vertex array object and store it in the pointer
-    glGenVertexArrays(1, &this->m_vertex_array_object);
-    glBindVertexArray(this->m_vertex_array_object);
-
-    // generate a number of buffers (blocks of data on the GPU)
-    glGenBuffers(NUM_BUFFERS, this->m_vertex_array_buffers);
-
-    /*
-     * POSITIONS
-     */
-
-    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[POSITION_VB]);
-    // fill the buffer with data
-    glBufferData(GL_ARRAY_BUFFER, this->positions.size() * 3 * sizeof(float), &this->positions[0][0], GL_STATIC_DRAW);
-
-    // specifies the generic vertex attribute of index 0 to be enabled
-    glEnableVertexAttribArray(vertex_id);
-    // define an array of generic vertex attribute data
-    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    /*
-     * NORMALS
-     */
-
-    // up the vertex_id
-     vertex_id++;
-    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
-    // fill the buffer with data
-    glBufferData(GL_ARRAY_BUFFER, this->normals.size() * 3 * sizeof(float), &this->normals[0][0], GL_STATIC_DRAW);
-
-    // specifies the generic vertex attribute of index 0 to be enabled
-    glEnableVertexAttribArray(vertex_id);
-    // define an array of generic vertex attribute data
-    glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-    if(this->colors.size() > 0) {
-        /*
-         * COLORS
-         */
-
-         // up the vertex_id
-        vertex_id++;
-        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
-        // fill the buffer with data
-        glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 3 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
-
-        // specifies the generic vertex attribute of index 0 to be enabled
-        glEnableVertexAttribArray(vertex_id);
-        // define an array of generic vertex attribute data
-        glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    }
-
-    if(this->texture_coordinates.size() > 0) {
-        /*
-         * TEXTURE COORDINATES
-         */
-
-         // up the vertex_id
-        vertex_id++;
-        // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[TEXTURE_VB]);
-        // fill the buffer with data
-        glBufferData(GL_ARRAY_BUFFER, this->texture_coordinates.size() * 2 * sizeof(float), &this->texture_coordinates[0][0], GL_STATIC_DRAW);
-
-        // specifies the generic vertex attribute of index 0 to be enabled
-        glEnableVertexAttribArray(vertex_id);
-        // define an array of generic vertex attribute data
-        glVertexAttribPointer(vertex_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    }
-
-    if(this->armature) {
-        if(this->armature->get_nr_bones() > 0) {
-            /*
-             * BONE WEIGHTS
-             */
-
-            const std::vector<float> weights = this->armature->get_weights_vector();
-            std::cout << weights.size() << std::endl;
-            std::cout << this->armature->get_nr_bones() << std::endl;
-
-             // up the vertex_id
-            vertex_id++;
-            // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-            glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[WEIGHTS_VB]);
-            // fill the buffer with data
-            glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(float), &weights[0], GL_STATIC_DRAW);
-
-            // specifies the generic vertex attribute of index 0 to be enabled
-            glEnableVertexAttribArray(vertex_id);
-            // define an array of generic vertex attribute data
-            glVertexAttribPointer(vertex_id, this->armature->get_nr_bones(), GL_FLOAT, GL_FALSE, 0, 0);
-        }
-    }
-
-    /*
-     * INDICES_VB
-     */
-
-    // bind a buffer identified by INDICES_VB and interpret this buffer as an array
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertex_array_buffers[INDICES_VB]);
-    // fill the buffer with data
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
-
-    // after this command, any commands that use a vertex array will
-    // no longer work
-    glBindVertexArray(0);
-}
-
-void Mesh::draw() const {
-    // load the vertex array
-    glBindVertexArray(m_vertex_array_object);
-
-    // draw the mesh using the indices
-    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-
-    // after this command, any commands that use a vertex array will
-    // no longer work
-    glBindVertexArray(0);
-}
-
-unsigned int Mesh::get_type() const {
-    unsigned int type = 0;
-
-    if(this->positions.size() > 0) {
-        type |= this->MESH_POSITIONS;
-    }
-
-    if(this->normals.size() > 0) {
-        type |= this->MESH_NORMALS;
-    }
-
-    if(this->colors.size() > 0) {
-        type |= this->MESH_COLORS;
-    }
-
-    if(this->texture_coordinates.size() > 0) {
-        type |= this->MESH_TEXTURE_COORDINATES;
-    }
-
-    if(this->get_bone_size() > 0) {
-        type |= this->MESH_ARMATURE;
-    }
-
-    return type;
-}
-
-unsigned int Mesh::get_bone_size() const {
-    if(this->armature == NULL) {
-        return 0;
-    } else {
-        return this->armature->get_nr_bones();
-    }
-}
-
-void Mesh::bind() const {
-    glBindVertexArray(this->m_vertex_array_object);
-}
-
-void Mesh::unbind() const {
-    glBindVertexArray(0);
-}
-
+/**
+ * @brief      read frame transform matrix from ifstream
+ *
+ * @param      f     ifstream pointer
+ *
+ * @return     matrix
+ */
 glm::mat4 Mesh::read_frame_transform_matrix(std::ifstream* f) {
     std::string line;
 
@@ -638,6 +641,13 @@ glm::mat4 Mesh::read_frame_transform_matrix(std::ifstream* f) {
     return glm::mat4(0.0);
 }
 
+/**
+ * @brief      read matrix from ifstream
+ *
+ * @param      f     ifstream pointer
+ *
+ * @return     matrix
+ */
 glm::mat4 Mesh::read_matrix(std::ifstream* f) {
     glm::mat4 mat;
     boost::regex regex_frame_transform_matrix("^\\s*([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+),\\s?([0-9.-]+)[,;]+");

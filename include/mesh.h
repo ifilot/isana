@@ -40,65 +40,12 @@
 
 class Mesh {
 private:
-    Armature* armature;
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::vec3> colors;
-    std::vector<glm::vec2> texture_coordinates;
-    std::vector<unsigned int> indices;
-
-public:
-    Mesh();
-    Mesh(const std::string& filename);
-    void center();
-
-    void set_indices(const std::vector<unsigned int>& _indices);
-    void set_positions(const std::vector<glm::vec3>& _positions);
-    void set_normals(const std::vector<glm::vec3>& _normals);
-    void set_colors(const std::vector<glm::vec3>& _normals);
-
-    unsigned int get_nr_indices() const;
-    unsigned int get_nr_positions() const;
-    unsigned int get_nr_normals() const;
-    unsigned int get_nr_colors() const;
-    unsigned int get_nr_texture_coordinates() const;
-
-    const glm::vec3* get_positions_start() const;
-    const glm::vec3* get_normals_start() const;
-    const glm::vec3* get_colors_start() const;
-    const glm::vec2* get_texture_coordinates_start() const;
-
-    const unsigned int* get_indices_start() const;
-
-    void static_load();
-    void draw() const;
-    void bind() const;
-    void unbind() const;
-
-    unsigned int get_type() const;
-
-    unsigned int get_bone_size() const;
-
-    static const unsigned int MESH_POSITIONS           = 1 << 0;
-    static const unsigned int MESH_NORMALS             = 1 << 1;
-    static const unsigned int MESH_COLORS              = 1 << 2;
-    static const unsigned int MESH_TEXTURE_COORDINATES = 1 << 3;
-    static const unsigned int MESH_ARMATURE            = 1 << 4;
-
-    inline Armature* get_armature() const {
-        return this->armature;
-    }
-
-private:
-    void load_mesh_from_file(const std::string& filename);
-
-    void load_mesh_from_obj_file(const std::string& filename);
-
-    void load_mesh_from_x_file(const std::string& filename);
-
-    glm::mat4 read_frame_transform_matrix(std::ifstream* f);
-
-    glm::mat4 read_matrix(std::ifstream* f);
+    Armature* armature;                                 //!< pointer to armature class
+    std::vector<glm::vec3> positions;                   //!< vector holding positions
+    std::vector<glm::vec3> normals;                     //!< vector holding vertex normals
+    std::vector<glm::vec3> colors;                      //!< vector holding colors
+    std::vector<glm::vec2> texture_coordinates;         //!< vector holding texture coordinates
+    std::vector<unsigned int> indices;                  //!< vector holding set of indices
 
     enum {
         POSITION_VB,
@@ -113,6 +60,240 @@ private:
 
     GLuint m_vertex_array_object;
     GLuint m_vertex_array_buffers[NUM_BUFFERS];
+
+public:
+
+    /**
+     * @brief      Mesh constructor
+     */
+    Mesh();
+
+    /**
+     * @brief      Mesh constructor method using an input file
+     *
+     * @param[in]  filename  The filename
+     */
+    Mesh(const std::string& filename);
+
+    /**
+     * @brief      load the mesh on the GPU
+     */
+    void static_load();
+
+    /**
+     * @brief      draw the mesh
+     */
+    void draw() const;
+
+    /**
+     * @brief      bind the vertex attribute array
+     */
+    void bind() const;
+
+    /**
+     * @brief      unbind the vertex attribute array
+     */
+    void unbind() const;
+
+    /**
+     * @brief      get the number of indices
+     *
+     * @return     number of indices
+     */
+    inline unsigned int get_nr_indices() const {
+        return this->indices.size();
+    }
+
+    /**
+     * @brief      Get the number of positions
+     *
+     * @return     number of positions
+     */
+    inline unsigned int get_nr_positions() const {
+        return this->positions.size();
+    }
+
+    /**
+     * @brief      Get the number of normals
+     *
+     * @return     number of normals
+     */
+    inline unsigned int get_nr_normals() const {
+        return this->normals.size();
+    }
+
+    /**
+     * @brief      Get the number of colors
+     *
+     * @return     number of colors
+     */
+    inline unsigned int get_nr_colors() const {
+        return this->colors.size();
+    }
+
+    /**
+     * @brief      Get the number of texture coordinates
+     *
+     * @return     number of texture coordinates
+     */
+    inline unsigned int get_nr_texture_coordinates() const {
+        return this->texture_coordinates.size();
+    }
+
+    /**
+     * @brief      Set the indices.
+     *
+     * @param[in]  _indices  The indices
+     */
+    inline void set_indices(const std::vector<unsigned int>& _indices) {
+        this->indices = _indices;
+    }
+
+    /**
+     * @brief      Set the positions.
+     *
+     * @param[in]  _positions  The positions
+     */
+    inline void set_positions(const std::vector<glm::vec3>& _positions) {
+        this->positions = _positions;
+    }
+
+    /**
+     * @brief      Set the normals.
+     *
+     * @param[in]  _normals  The normals
+     */
+    inline void set_normals(const std::vector<glm::vec3>& _normals) {
+        this->normals = _normals;
+    }
+
+    /**
+     * @brief      Set the colors.
+     *
+     * @param[in]  _colors  The colors
+     */
+    inline void set_colors(const std::vector<glm::vec3>& _colors) {
+        this->colors = _colors;
+    }
+
+    /**
+     * @brief      get the start index of the indices
+     *
+     * @return     pointer to indices
+     */
+    inline const unsigned int* get_indices_start() const {
+        return &this->indices[0];
+    }
+
+    /**
+     * @brief      get the start index of the positions
+     *
+     * @return     pointer to positions
+     */
+    inline const glm::vec3* get_positions_start() const {
+        return &this->positions[0];
+    }
+
+    /**
+     * @brief      get the start index of the normals
+     *
+     * @return     pointer to normals
+     */
+    inline const glm::vec3* get_normals_start() const {
+        return &this->normals[0];
+    }
+
+    /**
+     * @brief      get the start index of the colors
+     *
+     * @return     pointer to colors
+     */
+    inline const glm::vec3* get_colors_start() const {
+        return &this->colors[0];
+    }
+
+    /**
+     * @brief      get the start index of the texture coordinates
+     *
+     * @return     pointer to texture coordinates
+     */
+    inline const glm::vec2* get_texture_coordinates_start() const {
+        return &this->texture_coordinates[0];
+    }
+
+    /**
+     * @brief      Get the mesh type.
+     *
+     * @return     mesh type
+     */
+    unsigned int get_type() const;
+
+    static const unsigned int MESH_POSITIONS           = 1 << 0;    //!< has mesh positions
+    static const unsigned int MESH_NORMALS             = 1 << 1;    //!< has mesh normals
+    static const unsigned int MESH_COLORS              = 1 << 2;    //!< has mesh colors
+    static const unsigned int MESH_TEXTURE_COORDINATES = 1 << 3;    //!< has mesh texture coordinates
+    static const unsigned int MESH_ARMATURE            = 1 << 4;    //!< has mesh armature
+
+    /**
+     * @brief      Get the bone size.
+     *
+     * @return     Bone size.
+     */
+    unsigned int get_bone_size() const;
+
+    /**
+     * @brief      Get the armature.
+     *
+     * @return     pointer to armature instance
+     */
+    inline Armature* get_armature() const {
+        return this->armature;
+    }
+
+    /**
+     * @brief      center the vertex coordinates around the origin in model space
+     */
+    void center();
+
+private:
+    /**
+     * @brief      load Mesh from file
+     *
+     * @param[in]  filename  The filename
+     */
+    void load_mesh_from_file(const std::string& filename);
+
+    /**
+     * @brief      load Mesh from an .obj file
+     *
+     * @param[in]  filename  The filename
+     */
+    void load_mesh_from_obj_file(const std::string& filename);
+
+    /**
+     * @brief      load Mesh from an .x file
+     *
+     * @param[in]  filename  The filename
+     */
+    void load_mesh_from_x_file(const std::string& filename);
+
+    /**
+     * @brief      read frame transform matrix from ifstream
+     *
+     * @param      f     ifstream pointer
+     *
+     * @return     matrix
+     */
+    glm::mat4 read_frame_transform_matrix(std::ifstream* f);
+
+    /**
+     * @brief      read matrix from ifstream
+     *
+     * @param      f     ifstream pointer
+     *
+     * @return     matrix
+     */
+    glm::mat4 read_matrix(std::ifstream* f);
 };
 
 
