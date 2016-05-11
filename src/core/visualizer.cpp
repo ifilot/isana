@@ -212,4 +212,5 @@ void Visualizer::update(double dt) {
 void Visualizer::draw() {
     Terrain::get().draw();
     ObjectsEngine::get().draw();
+    FontWriter::get().draw();
 }

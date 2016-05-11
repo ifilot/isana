@@ -58,19 +58,31 @@ private:
 
     std::vector<Glyph> glyphs;
 
+    unsigned int texture_width;
+    unsigned int texture_height;
+    GLuint texture;
+
+    Shader* shader;
+    GLuint m_vertex_array_object;
+    GLuint m_vertex_array_buffers[3];
+
+    std::vector<unsigned int> indices;
+    std::vector<glm::vec2> positions;
+    std::vector<glm::vec2> texture_coordinates;
+
 public:
     static FontWriter& get() {
         static FontWriter font_writer_instance;
         return font_writer_instance;
     }
+
+    void draw();
+    void static_load();
+
 private:
     FontWriter();
 
     void generate_character_map();
-
-    inline void setRGBA(png_byte *ptr, float val) {
-        ptr[0] = ptr[1] = ptr[2] = ptr[3] = val;
-    }
 
     FontWriter(FontWriter const&)          = delete;
     void operator=(FontWriter const&)  = delete;
