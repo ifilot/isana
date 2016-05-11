@@ -37,6 +37,27 @@ class FontWriter {
 private:
     FT_Library library;
 
+    struct Glyph {
+        unsigned int x;
+        unsigned int y;
+        unsigned int width;
+        unsigned int height;
+        unsigned int horizontal_bearing;
+        unsigned int vertical_bearing;
+        unsigned int horizontal_advance;
+
+        Glyph() :
+            x(0),
+            y(0),
+            width(0),
+            height(0),
+            horizontal_bearing(0),
+            vertical_bearing(0),
+            horizontal_advance(0) {}
+    };
+
+    std::vector<Glyph> glyphs;
+
 public:
     static FontWriter& get() {
         static FontWriter font_writer_instance;

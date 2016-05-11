@@ -25,20 +25,24 @@ FontWriter::FontWriter() {
         std::cerr << "FT_Init_FreeType failed" << std::endl;
     }
 
+    this->glyphs.resize(255);
     this->generate_character_map();
 }
 
 void FontWriter::generate_character_map() {
 
-    static const unsigned int char_size = 100;
-    static const unsigned int charmap_width = 10 * char_size;
-    static const unsigned int charmap_height = 10 * char_size;
+    std::vector<std::vector<uint8_t>> char_bitmaps(255);
+    unsigned int img_width = 0;         // total image width
+    unsigned int img_height = 0;        // total image height
 
-    uint8_t* expanded_data = new uint8_t[ 2 * charmap_width * charmap_height];
+    unsigned int temp_x = 0;
+    unsigned int temp_y = 0;
+    unsigned int counter = 0;           // iteration counter
 
+    // collect all data of the glyphs and store them in temporary vectors
     for(unsigned int i=32; i<=126; i++) {
+        counter++;
         char c = (char)i;
-        std::cout << c << std::endl;
 
         FT_Face face;
 
@@ -61,96 +65,71 @@ void FontWriter::generate_character_map() {
         FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, 0, 1 );
         FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)glyph;
         FT_Bitmap& bitmap=bitmap_glyph->bitmap;
-        FT_Glyph_Metrics& metrics = face->glyph->metrics;
 
         const unsigned int width = bitmap.width;
         const unsigned int height = bitmap.rows;
 
-        const unsigned int gx = char_size * ((i-32) % 10);
-        const unsigned int gy = char_size * ((i-32) / 10);
+        this->glyphs[i].width = face->glyph->metrics.width / 64;
+        this->glyphs[i].height = face->glyph->metrics.height / 64;
+        this->glyphs[i].horizontal_bearing = face->glyph->metrics.horiBearingX / 64;
+        this->glyphs[i].vertical_bearing = face->glyph->metrics.horiBearingY / 64;
+        this->glyphs[i].horizontal_advance =  face->glyph->metrics.horiAdvance / 64;
 
-        for(unsigned int k=0; k<height; k++) {
-            for(unsigned int l=0; l<width; l++){
-                expanded_data[2*((l+gx)+(k+gy)*charmap_width)] =
-                expanded_data[2*((l+gx)+(k+gy)*charmap_width)+1] =
-                        (l>=bitmap.width || k>=bitmap.rows) ?
-                        0 : bitmap.buffer[l + bitmap.width*k];
-            }
+        char_bitmaps[i] = std::vector<uint8_t>(width * height, 0.0);
+        for(unsigned int j=0; j<(width*height); j++) {
+            char_bitmaps[i][j] = bitmap.buffer[j];
         }
 
         FT_Done_Face(face);
-    }
 
-    int code = 0;
-    FILE *fp = NULL;
-    png_structp png_ptr = NULL;
-    png_infop info_ptr = NULL;
-    png_bytep row = NULL;
+        temp_x += width + 5;
+        temp_y = std::max(temp_y, height + 5);
 
-    const char* filename = "test.png";
-    const char* title = "char";
+        if(counter % 10 == 0) {
+            counter = 0;
 
-    // Open file for writing (binary mode)
-    fp = fopen(filename, "wb");
-    if (fp == NULL) {
-        fprintf(stderr, "Could not open file %s for writing\n", filename);
-        code = 1;
-        //goto finalise;
-    }
+            img_width = std::max(img_width, temp_x);
+            img_height += temp_y;
 
-    // Initialize write structure
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (png_ptr == NULL) {
-        fprintf(stderr, "Could not allocate write struct\n");
-        code = 1;
-        //goto finalise;
-    }
-
-    // Initialize info structure
-    info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == NULL) {
-        fprintf(stderr, "Could not allocate info struct\n");
-        code = 1;
-        //goto finalise;
-    }
-
-    // Setup Exception handling
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        fprintf(stderr, "Error during png creation\n");
-        code = 1;
-        //goto finalise;
-    }
-
-    png_init_io(png_ptr, fp);
-
-    // Write header (8 bit colour depth)
-    png_set_IHDR(png_ptr, info_ptr, charmap_width, charmap_height,
-            8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-            PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-    // Set title
-    if (title != NULL) {
-        png_text title_text;
-        title_text.compression = PNG_TEXT_COMPRESSION_NONE;
-        title_text.key = (char*)"Title";
-        title_text.text = (char*)title;
-        png_set_text(png_ptr, info_ptr, &title_text, 1);
-    }
-
-    png_write_info(png_ptr, info_ptr);
-
-    // Allocate memory for one row (4 bytes per pixel - RGBA)
-    row = (png_bytep) malloc(4 * charmap_width * sizeof(png_byte));
-
-    // Write image data
-    unsigned int x, y;
-    for (y=0 ; y<charmap_height ; y++) {
-        for (x=0 ; x<charmap_width ; x++) {
-            setRGBA(&(row[x*4]), expanded_data[(y*charmap_width + x)*2]);
+            temp_x = 0;
+            temp_y = 0;
         }
-        png_write_row(png_ptr, row);
     }
 
-    // End write
-    png_write_end(png_ptr, NULL);
+    if(counter % 10 != 0) {
+        img_height += temp_y;
+    }
+
+    // create a texture from the stored information
+    uint8_t* expanded_data = new uint8_t[ 2 * img_width * img_height];
+    temp_y = 0;
+    unsigned int gy = 0;
+    unsigned int gx = 0;
+
+    counter = 0;
+    for(unsigned int i=32; i<=126; i++) {
+        counter++;
+        const unsigned int width = this->glyphs[i].width;
+        const unsigned int height = this->glyphs[i].height;
+
+        this->glyphs[i].x = gx;
+        this->glyphs[i].y = gy;
+
+        for(unsigned int k=0; k<height; k++) {
+            for(unsigned int l=0; l<width; l++){
+                expanded_data[2*((l+gx)+(k+gy)*img_width)] =
+                expanded_data[2*((l+gx)+(k+gy)*img_width)+1] =
+                        char_bitmaps[i][l + width*k];
+            }
+        }
+
+        gx += width + 5;
+        temp_y = std::max(temp_y, height + 5);
+
+        if(counter % 10 == 0) {
+            gx = 0;
+            gy += temp_y;
+            temp_y = 0;
+        }
+    }
 }
