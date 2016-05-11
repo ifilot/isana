@@ -20,6 +20,13 @@
 
 #include "object.h"
 
+/**
+ * @brief      ObjectProperty constructor
+ *
+ * @param[in]  _name  The name
+ * @param[in]  _type  The type
+ * @param[in]  _size  The size
+ */
 ObjectProperty::ObjectProperty(const std::string& _name, unsigned int _type, unsigned int _size) {
     this->name = _name;
 
@@ -55,12 +62,23 @@ ObjectProperty::ObjectProperty(const std::string& _name, unsigned int _type, uns
     this->type = _type;
 }
 
+/**
+ * @brief      Set the value of the ObjectProperty
+ *
+ * @param[in]  val   value to set
+ */
 void ObjectProperty::set_value(const float* _val) {
     for(unsigned int i=0; i<this->size * this->base_size; i++) {
         this->val[i] = _val[i];
     }
 }
 
+/**
+ * @brief      Object constructor
+ *
+ * @param      shader  pointer to shader
+ * @param[in]  _mesh   pointer to mesh
+ */
 Object::Object(Shader* _shader, const Mesh* _mesh) {
     /* load the default shader */
     this->is_rigged = false;
@@ -87,6 +105,9 @@ Object::Object(Shader* _shader, const Mesh* _mesh) {
     }
 }
 
+/**
+ * @brief      draw the object
+ */
 void Object::draw() {
     glm::mat4 view = Camera::get().get_view();
     glm::mat4 projection = Camera::get().get_projection();
@@ -109,6 +130,9 @@ void Object::draw() {
     this->mesh->unbind();
 }
 
+/**
+ * @brief      load the object into memory
+ */
 void Object::load() {
     // load uniforms
     for(unsigned int i=0; i<this->properties.size(); i++) {
@@ -141,6 +165,11 @@ void Object::load() {
     }
 }
 
+/**
+ * @brief      update the object
+ *
+ * @param[in]  dt    time step
+ */
 void Object::update(double dt) {
     if(this->mesh->get_type() & Mesh::MESH_ARMATURE) {
         angle += dt;
@@ -155,11 +184,26 @@ void Object::update(double dt) {
     }
 }
 
+/**
+ * @brief      add property to the object
+ *
+ * @param[in]  _name  name of the ObjectProperty
+ * @param[in]  _type  variable type (derived from ShaderUniform types)
+ * @param[in]  _size  size of the object
+ *
+ * @return     index of the ObjectProperty
+ */
 unsigned int Object::add_property(const std::string& _name, unsigned int type, unsigned int size) {
     this->properties.push_back(ObjectProperty(_name, type, size));
     return this->properties.size() - 1;
 }
 
+/**
+ * @brief      set the value of an ObjectProperty
+ *
+ * @param[in]  prop_id  index of the property
+ * @param[in]  val      pointer to memory holding values
+ */
 void Object::set_property_value(unsigned int prop_id, const float* val) {
     this->properties[prop_id].set_value(val);
 }
