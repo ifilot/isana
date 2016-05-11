@@ -23,11 +23,11 @@
 
 #include <vector>
 
-#include "mesh.h"
-#include "shader.h"
-#include "object.h"
-#include "texture_manager.h"
-#include "terrain.h"
+#include "core/mesh.h"
+#include "core/shader.h"
+#include "core/object.h"
+#include "core/texture_manager.h"
+#include "environment/terrain.h"
 
 /**
  * @class ObjectsEngine class

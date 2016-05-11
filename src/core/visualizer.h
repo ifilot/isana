@@ -23,10 +23,11 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "display.h"
-#include "shader.h"
-#include "terrain.h"
-#include "objects_engine.h"
+#include "core/display.h"
+#include "core/shader.h"
+
+#include "environment/terrain.h"
+#include "objects/objects_engine.h"
 
 /**
  * @class Visualizer class

@@ -28,8 +28,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
-#include "shader.h"
-#include "mesh.h"
+#include "core/shader.h"
+#include "core/mesh.h"
 
 /**
  * @brief      a property that will be parsed to the shader as a uniform

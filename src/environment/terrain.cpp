@@ -18,7 +18,7 @@
 #                                                                         #
 #**************************************************************************/
 
-#include "terrain.h"
+#include "environment/terrain.h"
 
 /**
  * @brief      TerrainTriangle constructor

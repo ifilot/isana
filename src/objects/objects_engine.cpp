@@ -18,7 +18,7 @@
 #                                                                         #
 #**************************************************************************/
 
-#include "objects_engine.h"
+#include "objects/objects_engine.h"
 
 ObjectsEngine::ObjectsEngine() {
     unsigned int prop_id = 0;

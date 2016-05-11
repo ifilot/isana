@@ -32,7 +32,6 @@ CFLAGS = $(OPTS) -std=c++0x
 LDFLAGS = `pkg-config --libs --static glfw3 glew` -lpng
 
 # set a list of directories
-INCDIR  = ./include
 OBJDIR  = ./obj
 BINDIR  = ./bin
 SRCDIR  = ./src
@@ -48,40 +47,40 @@ else
 endif
 
 # set the include folder where the .h files reside
-CFLAGS += -I$(INCDIR) -I$(SRCDIR)
+CFLAGS += -I$(SRCDIR)
 
 # add here the source files for the compilation
-SOURCES = isana.cpp camera.cpp display.cpp visualizer.cpp object.cpp \
-shader.cpp texture_manager.cpp mesh.cpp terrain.cpp perlin_noise.cpp \
-objects_engine.cpp armature.cpp
+_SOURCES = isana.cpp \
+accessoires/perlin_noise.cpp \
+core/armature.cpp \
+core/camera.cpp \
+core/display.cpp \
+core/mesh.cpp \
+core/object.cpp \
+core/shader.cpp \
+core/texture_manager.cpp \
+core/visualizer.cpp \
+environment/terrain.cpp \
+objects/objects_engine.cpp
+SOURCES = $(patsubst %,$(SRCDIR)/%,$(_SOURCES))
 
-SOURCES_TEST = mesh.cpp armature.cpp
-TESTCPP = isana_test.cpp
-TESTSRC = $(TESTDIR)/$(TESTCPP)
+# add paths in sources to the VPATH
+VPATH := $(dir $(SOURCES))
 
-_INCS = $(SOURCES:.cpp=.h)
-INCS = $(patsubst %,./include/%,$(_INCS))
+# every source file has its own header file
+INCS = $(SOURCES:.cpp=.h)
 
-# create the obj variable by substituting the extension of the sources
-# and adding a path
-_OBJ = $(SOURCES:.cpp=.o)
-OBJ = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
-_OBJ_TEST = $(SOURCES_TEST:.cpp=.o)
-OBJ_TEST = $(patsubst %,$(OBJDIR)/%,$(_OBJ_TEST))
+# add object file for the sources
+OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SOURCES)))
 
 all: $(BINDIR)/$(EXEC)
 
-test: $(BINDIR)/$(TEST) $(BINDIR)/$(EXEC)
-	BOOST_TEST_LOG_LEVEL=message $(BINDIR)/$(TEST)
+$(BINDIR)/$(EXEC): $(OBJS) $(INCS)
+	@echo creating $@ ...
+	$(CXX) -o $(BINDIR)/$(EXEC) $(OBJS) $(LDFLAGS)
 
-$(BINDIR)/$(EXEC): $(OBJ) $(INCS)
-	$(CXX) -o $(BINDIR)/$(EXEC) $(OBJ) $(LDFLAGS)
-
-$(BINDIR)/$(TEST): $(OBJ_TEST) $(TESTSRC) $(INCS)
-	$(CXX) -o $(BINDIR)/$(TEST) $(TESTSRC) $(OBJ_TEST) $(LIBDIR) $(CFLAGS) $(LDFLAGS) $(LDTEST)
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/%.h
+$(OBJDIR)/%.o: %.cpp %.h
 	$(CXX) -c -o $@ $< $(CFLAGS)
 
 clean:
-	rm -vf $(BINDIR)/$(EXEC) $(OBJ) $(TESTS_EXEC)
+	rm -vf $(BINDIR)/$(EXEC) $(OBJS)

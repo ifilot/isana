@@ -21,8 +21,8 @@
 #ifndef _TERRAIN_H
 #define _TERRAIN_H
 
-#include "perlin_noise.h"
-#include "object.h"
+#include "accessoires/perlin_noise.h"
+#include "core/object.h"
 
 /**
  * @brief      single triangle in terrain object
