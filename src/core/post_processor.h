@@ -36,9 +36,14 @@
  */
 class PostProcessor {
 private:
+    GLuint frame_buffer_ms;         //!< reference to frameBuffer object
     GLuint frame_buffer;         //!< reference to frameBuffer object
-    GLuint texture;              //!< reference to frameBuffer object
-    GLuint depth;                //!< reference to frameBuffer object
+
+    GLuint texture;              //!< reference to texture
+    GLuint texture_msaa;         //!< reference to texture
+
+    GLuint depth;                //!< reference to depth
+    GLuint depth_msaa;                //!< reference to depth
 
     unsigned int msaa;             //!< amount of supersampling
 
@@ -77,6 +82,7 @@ private:
 
     GLuint m_vertex_array_object;
     GLuint m_vertex_array_buffers[2];
+
     std::vector<glm::vec2> positions;
     std::vector<unsigned int> indices;
 

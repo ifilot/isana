@@ -114,6 +114,7 @@ void Display::open_frame() {
     PostProcessor::get().bind_frame_buffer();
     glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     Camera::get().update();
 }
 
