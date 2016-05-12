@@ -42,15 +42,23 @@ private:
         unsigned int y;
         unsigned int width;
         unsigned int height;
-        unsigned int horizontal_bearing;
-        unsigned int vertical_bearing;
-        unsigned int horizontal_advance;
+        float tx1;
+        float ty1;
+        float tx2;
+        float ty2;
+        int horizontal_bearing;
+        int vertical_bearing;
+        int horizontal_advance;
 
         Glyph() :
             x(0),
             y(0),
             width(0),
             height(0),
+            tx1(0),
+            ty1(0),
+            tx2(0),
+            ty2(0),
             horizontal_bearing(0),
             vertical_bearing(0),
             horizontal_advance(0) {}
@@ -83,6 +91,8 @@ private:
     FontWriter();
 
     void generate_character_map();
+
+    unsigned int base_font_size;
 
     FontWriter(FontWriter const&)          = delete;
     void operator=(FontWriter const&)  = delete;

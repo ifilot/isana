@@ -56,6 +56,7 @@ Shader::Shader(const std::string& filename) {
     }
 
     this->flag_loaded = false;
+    this->texture_id = 0;
 }
 
 void Shader::add_uniform(unsigned int type, std::string name, unsigned int size) {
@@ -98,7 +99,7 @@ void Shader::set_uniform(unsigned int uniform_id, const float* val) {
             glUniform3fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), val);
         break;
         case  ShaderUniform::TEXTURE:
-            glUniform1i(m_uniforms[uniform_id], 0);
+            glUniform1i(m_uniforms[uniform_id], this->texture_id);
         break;
         case  ShaderUniform::FLOAT:
             glUniform1f(m_uniforms[uniform_id], val[0]);

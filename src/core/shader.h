@@ -112,6 +112,10 @@ public:
         return flag_loaded;
     }
 
+    inline void set_texture_id(GLuint _texture_id) {
+        this->texture_id = _texture_id;
+    }
+
     virtual ~Shader();
 
 protected:
@@ -130,6 +134,7 @@ private:
     std::vector<GLuint> m_uniforms;             // reference array to the uniforms
 
     bool flag_loaded;
+    GLuint texture_id;
 };
 
 #endif //_SHADER_H

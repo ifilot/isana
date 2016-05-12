@@ -21,6 +21,8 @@
 #include "font_writer.h"
 
 FontWriter::FontWriter() {
+    this->base_font_size = 12;
+
     if(FT_Init_FreeType(&this->library)) {
         std::cerr << "FT_Init_FreeType failed" << std::endl;
     }
@@ -32,13 +34,16 @@ FontWriter::FontWriter() {
     this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "position");
     this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "texture_coordinate");
     this->shader->add_uniform(ShaderUniform::MAT4, "projection", 1);
-    this->shader->add_uniform(ShaderUniform::VEC3, "color", 1);
-    this->shader->add_uniform(ShaderUniform::TEXTURE, "texcoord", 1);
+    this->shader->add_uniform(ShaderUniform::VEC3, "textcolor", 1);
+    this->shader->add_uniform(ShaderUniform::TEXTURE, "text", 1);
+    this->shader->set_texture_id(1); // corresponds to GL_TEXTURE1
 
     glGenVertexArrays(1, &this->m_vertex_array_object);
     glBindVertexArray(this->m_vertex_array_object);
     this->shader->bind_uniforms_and_attributes();
     glBindVertexArray(0);
+
+    FT_Done_FreeType(this->library);
 }
 
 void FontWriter::generate_character_map() {
@@ -62,7 +67,7 @@ void FontWriter::generate_character_map() {
             std::cerr << "FT_New_Face failed (there is probably a problem with your font file)" << std::endl;
         }
 
-        FT_Set_Char_Size( face, 96 * 64, 96 * 64, 96, 96);
+        FT_Set_Char_Size( face, base_font_size * 64, base_font_size * 64, 128, 128);
 
         if(FT_Load_Glyph( face, FT_Get_Char_Index( face, c ), FT_LOAD_DEFAULT )) {
             std::cerr << "FT_Load_Glyph failed" << std::endl;
@@ -112,11 +117,16 @@ void FontWriter::generate_character_map() {
         img_height += temp_y;
     }
 
+    // store char map sizes
     this->texture_width = img_width;
     this->texture_height = img_height;
 
-    // create a texture from the stored information
+    // create a texture from the stored information, set the base value
+    // to zero
     uint8_t* expanded_data = new uint8_t[img_width * img_height];
+    for(unsigned int i=0; i<img_width * img_height; i++) {
+        expanded_data[i] = 0;
+    }
     temp_y = 0;
     unsigned int gy = 0;
     unsigned int gx = 0;
@@ -135,6 +145,11 @@ void FontWriter::generate_character_map() {
                 expanded_data[(l+gx)+(k+gy)*img_width] = char_bitmaps[i][l + width*k];
             }
         }
+
+        this->glyphs[i].tx1 = (float)gx / (float)img_width;
+        this->glyphs[i].tx2 = (float)(gx + width) / (float)img_width;
+        this->glyphs[i].ty1 = (float)(gy + height) / (float)img_height;
+        this->glyphs[i].ty2 = (float)(gy) / (float)img_height;
 
         gx += width + 5;
         temp_y = std::max(temp_y, height + 5);
@@ -171,51 +186,77 @@ void FontWriter::generate_character_map() {
 void FontWriter::draw() {
     glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
 
-    static const std::string test_string = "The big brown fox jumped over the lazy lynx";
+    static const std::string test_string = "The Quick Brown Fox jumped over the Lazy Dog";
 
     this->positions.clear();
     this->texture_coordinates.clear();
     this->indices.clear();
 
+    float wx = 10.0f;
+    float wy = 10.0f;
+
+    const float font_pt = 12.0f;
+    const float scale = font_pt / (float)base_font_size;
+
     for(unsigned int i=0; i<test_string.size(); i++) {
         unsigned int c = (unsigned int)test_string.at(i);
 
-        const unsigned int width = this->glyphs[c].width;
-        const unsigned int height = this->glyphs[c].height;
+        const float fx = wx + (float)this->glyphs[c].horizontal_bearing * scale;
+        const float fy = wy - (float)(this->glyphs[c].height - this->glyphs[c].vertical_bearing) * scale;
 
-        const unsigned int gx = this->glyphs[c].x;
-        const unsigned int gy = this->glyphs[c].y;
+        this->positions.push_back(glm::vec2(fx, fy));
+        this->positions.push_back(glm::vec2(fx + (float)this->glyphs[c].width * scale, fy));
+        this->positions.push_back(glm::vec2(fx + (float)this->glyphs[c].width * scale, fy + (float)this->glyphs[c].height * scale));
+        this->positions.push_back(glm::vec2(fx, fy + (float)this->glyphs[c].height * scale));
 
-        float x = 0;
-        float y = 400;
+        this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx1, this->glyphs[c].ty1));
+        this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx2, this->glyphs[c].ty1));
+        this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx2, this->glyphs[c].ty2));
+        this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx1, this->glyphs[c].ty2));
 
-        this->positions.push_back(glm::vec2(x,y));
-        this->positions.push_back(glm::vec2(x+12,y));
-        this->positions.push_back(glm::vec2(x+12,y+12));
-        this->positions.push_back(glm::vec2(x,y+12));
+        this->indices.push_back(this->positions.size()-4);
+        this->indices.push_back(this->positions.size()-3);
+        this->indices.push_back(this->positions.size()-2);
+        this->indices.push_back(this->positions.size()-4);
+        this->indices.push_back(this->positions.size()-2);
+        this->indices.push_back(this->positions.size()-1);
 
-        float tx = (float)gx / (float)this->texture_width;
-        float ty = (float)gy / (float)this->texture_height;
-        float ww = (float)width / (float)this->texture_width;
-        float hh = (float)height / (float)this->texture_height;
-
-        this->texture_coordinates.push_back(glm::vec2(tx,ty));
-        this->texture_coordinates.push_back(glm::vec2(tx+ww,ty+hh));
-        this->texture_coordinates.push_back(glm::vec2(tx+ww,ty+hh));
-        this->texture_coordinates.push_back(glm::vec2(tx,ty+hh));
-
-        this->indices.push_back(this->indices.size());
-        this->indices.push_back(this->indices.size());
-        this->indices.push_back(this->indices.size());
-        this->indices.push_back(this->indices.size());
-
-        x += 12;
+        wx += this->glyphs[c].horizontal_advance * scale;
     }
+
+    float tscale = 1.0f;
+    if(this->texture_width > 200) {
+        tscale = 200.0f / (float)this->texture_width;
+    }
+    const float mx = 800 - this->texture_width * tscale - 10;
+    const float my = 600 - this->texture_height * tscale  - 10;
+
+    this->positions.push_back(glm::vec2(mx, my));
+    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my));
+    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my + this->texture_height * tscale ));
+    this->positions.push_back(glm::vec2(mx, my + this->texture_height * tscale ));
+
+    this->texture_coordinates.push_back(glm::vec2(0,1));
+    this->texture_coordinates.push_back(glm::vec2(1,1));
+    this->texture_coordinates.push_back(glm::vec2(1,0));
+    this->texture_coordinates.push_back(glm::vec2(0,0));
+
+    this->indices.push_back(this->positions.size()-4);
+    this->indices.push_back(this->positions.size()-3);
+    this->indices.push_back(this->positions.size()-2);
+    this->indices.push_back(this->positions.size()-4);
+    this->indices.push_back(this->positions.size()-2);
+    this->indices.push_back(this->positions.size()-1);
 
     this->static_load();
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+
+    this->shader->link_shader();
     this->shader->set_uniform(0, &projection[0][0]);
-    this->shader->set_uniform(1, &glm::vec3(1,1,1)[0]);
+    this->shader->set_uniform(1, &glm::vec3(0,0,0)[0]);
+    this->shader->set_uniform(2, NULL);
 
     // load the vertex array
     glBindVertexArray(m_vertex_array_object);
@@ -226,6 +267,7 @@ void FontWriter::draw() {
     // after this command, any commands that use a vertex array will
     // no longer work
     glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void FontWriter::static_load() {
