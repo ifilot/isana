@@ -20,6 +20,11 @@
 
 #include "font_writer.h"
 
+/**
+ * @brief       FontWriter constructor
+ *
+ * @return      FontWriter instance
+ */
 FontWriter::FontWriter() {
     this->base_font_size = 12;
 
@@ -46,6 +51,9 @@ FontWriter::FontWriter() {
     FT_Done_FreeType(this->library);
 }
 
+/**
+ * @brief Place a font in a texture and store the positions
+ */
 void FontWriter::generate_character_map() {
 
     std::vector<std::vector<uint8_t>> char_bitmaps(255);
@@ -183,6 +191,9 @@ void FontWriter::generate_character_map() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+/**
+ * @brief Draw the characters on the screen
+ */
 void FontWriter::draw() {
     glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
 
@@ -270,6 +281,9 @@ void FontWriter::draw() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+/**
+ * @brief Load the characters on the GPU
+ */
 void FontWriter::static_load() {
     // load the mesh into memory
     unsigned int size = this->indices.size();

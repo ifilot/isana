@@ -33,10 +33,22 @@
 
 #include "shader.h"
 
+/**
+ * @class FontWriter
+ *
+ * @brief writes text to the screen
+ *
+ */
 class FontWriter {
 private:
-    FT_Library library;
+    FT_Library library;         //!< FreeType library
 
+    /**
+     * @struct Glyph
+     *
+     * @brief contains information of a single character
+     *
+     */
     struct Glyph {
         unsigned int x;
         unsigned int y;
@@ -64,35 +76,54 @@ private:
             horizontal_advance(0) {}
     };
 
-    std::vector<Glyph> glyphs;
+    std::vector<Glyph> glyphs;      //!< vector holding collection of glyphs
+    unsigned int base_font_size;    //!< base font size for the texture
 
-    unsigned int texture_width;
-    unsigned int texture_height;
-    GLuint texture;
+    unsigned int texture_width;     //!< width of the texture texture
+    unsigned int texture_height;    //!< height of the font texture
+    GLuint texture;                 //!< OpenGL reference of the texture
 
-    Shader* shader;
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_array_buffers[3];
+    Shader* shader;                     //!< pointer to text shader object
+    GLuint m_vertex_array_object;       //!< reference of the VAO
+    GLuint m_vertex_array_buffers[3];   //!< reference to the VAB
 
-    std::vector<unsigned int> indices;
-    std::vector<glm::vec2> positions;
-    std::vector<glm::vec2> texture_coordinates;
+    std::vector<unsigned int> indices;              //!< vector holding indices for the screen characters
+    std::vector<glm::vec2> positions;               //!< vector holding screen character positions
+    std::vector<glm::vec2> texture_coordinates;     //!< vector holding texture coordinates for the screen characters
 
 public:
+    /**
+     * @brief       get a reference to the FontWriter
+     *
+     * @return      reference to the FontWriter object (singleton pattern)
+     */
     static FontWriter& get() {
         static FontWriter font_writer_instance;
         return font_writer_instance;
     }
 
+    /**
+     * @brief Draw the characters on the screen
+     */
     void draw();
+
+    /**
+     * @brief Load the characters on the GPU
+     */
     void static_load();
 
 private:
+    /**
+     * @brief       FontWriter constructor
+     *
+     * @return      FontWriter instance
+     */
     FontWriter();
 
+    /**
+     * @brief Place a font in a texture and store the positions
+     */
     void generate_character_map();
-
-    unsigned int base_font_size;
 
     FontWriter(FontWriter const&)          = delete;
     void operator=(FontWriter const&)  = delete;
