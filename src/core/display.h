@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -30,6 +30,7 @@
 
 #include "camera.h"
 #include "visualizer.h"
+#include "screen.h"
 
 /**
  * @class Display class
@@ -182,9 +183,6 @@ private:
     Display();
 
     GLFWwindow* m_window;       //!< pointer to the window
-
-    unsigned int m_width;       //!< width of the window
-    unsigned int m_height;      //!< height of the window
 
     // Singleton pattern
     Display(Display const&)          = delete;

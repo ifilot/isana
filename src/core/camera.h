@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                             #
+#   This file is part of ISANA                                            #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -24,6 +24,8 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+
+#include "screen.h"
 
 /**
  * @class Camera class

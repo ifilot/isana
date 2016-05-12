@@ -32,6 +32,7 @@
 #include <iostream>
 
 #include "shader.h"
+#include "screen.h"
 
 /**
  * @class FontWriter
@@ -91,6 +92,8 @@ private:
     std::vector<glm::vec2> positions;               //!< vector holding screen character positions
     std::vector<glm::vec2> texture_coordinates;     //!< vector holding texture coordinates for the screen characters
 
+    bool display_charmap;                           //!< flag whether to print charmap to screen
+
 public:
     /**
      * @brief       get a reference to the FontWriter
@@ -124,6 +127,22 @@ private:
      * @brief Place a font in a texture and store the positions
      */
     void generate_character_map();
+
+    /**
+     * @brief calculate the signed distance field of a Glyph
+     *
+     * @param[in]   distance_field      array holding distance field values
+     * @param[in]   data                vector holding monochromatic glyph
+     * @param[in]   width               width of the char bitmap
+     * @param[in]   height              height of the char bitmap
+     *
+     */
+    void calculate_distance_field(uint8_t* distance_field, const std::vector<bool>& data, int width, int height);
+
+    /**
+     * @brief add vertices to display the charmap to the screen
+     */
+    void add_charmap_to_screen();
 
     FontWriter(FontWriter const&)          = delete;
     void operator=(FontWriter const&)  = delete;

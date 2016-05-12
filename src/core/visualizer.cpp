@@ -92,10 +92,6 @@ void Visualizer::run() {
 
         // stop drawing here
         Display::get().close_frame();  /* close the frame */
-
-        Terrain::get();
-
-        FontWriter::get();
     }
 }
 

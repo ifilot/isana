@@ -7,6 +7,13 @@ uniform sampler2D text;
 uniform vec3 textcolor;
 
 void main() {
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, texcoord).r);
-    color = vec4(textcolor, 1.0) * sampled;
+    float ra = texture(text, texcoord).r;
+    const float delta = 0.2f;
+
+    if(ra > 0.5f - delta) {
+        ra = 1.0f;
+    }
+    ra = smoothstep(0.5f - delta, 0.5f + delta, ra);
+
+    color = vec4(textcolor, ra);
 }

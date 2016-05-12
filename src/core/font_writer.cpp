@@ -26,7 +26,8 @@
  * @return      FontWriter instance
  */
 FontWriter::FontWriter() {
-    this->base_font_size = 12;
+    this->base_font_size = 48;
+    this->display_charmap = false;
 
     if(FT_Init_FreeType(&this->library)) {
         std::cerr << "FT_Init_FreeType failed" << std::endl;
@@ -56,7 +57,7 @@ FontWriter::FontWriter() {
  */
 void FontWriter::generate_character_map() {
 
-    std::vector<std::vector<uint8_t>> char_bitmaps(255);
+    std::vector<std::vector<bool>> char_bitmaps(255);
     unsigned int img_width = 0;         // total image width
     unsigned int img_height = 0;        // total image height
 
@@ -71,7 +72,7 @@ void FontWriter::generate_character_map() {
 
         FT_Face face;
 
-        if(FT_New_Face( this->library, "./assets/fonts/arial.ttf", 0, &face )) {
+        if(FT_New_Face( this->library, "./assets/fonts/vera.ttf", 0, &face )) {
             std::cerr << "FT_New_Face failed (there is probably a problem with your font file)" << std::endl;
         }
 
@@ -100,7 +101,7 @@ void FontWriter::generate_character_map() {
         this->glyphs[i].vertical_bearing = face->glyph->metrics.horiBearingY / 64;
         this->glyphs[i].horizontal_advance =  face->glyph->metrics.horiAdvance / 64;
 
-        char_bitmaps[i] = std::vector<uint8_t>(width * height, 0.0);
+        char_bitmaps[i] = std::vector<bool>(width * height, 0.0);
         for(unsigned int j=0; j<(width*height); j++) {
             char_bitmaps[i][j] = bitmap.buffer[j];
         }
@@ -148,9 +149,15 @@ void FontWriter::generate_character_map() {
         this->glyphs[i].x = gx;
         this->glyphs[i].y = gy;
 
+        uint8_t* distance_field = new uint8_t[width * height];
+        this->calculate_distance_field(distance_field,
+                                       char_bitmaps[i],
+                                       width,
+                                       height);
+
         for(unsigned int k=0; k<height; k++) {
             for(unsigned int l=0; l<width; l++){
-                expanded_data[(l+gx)+(k+gy)*img_width] = char_bitmaps[i][l + width*k];
+                expanded_data[(l+gx)+(k+gy)*img_width] = distance_field[l + width*k];
             }
         }
 
@@ -195,7 +202,10 @@ void FontWriter::generate_character_map() {
  * @brief Draw the characters on the screen
  */
 void FontWriter::draw() {
-    glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+    glm::mat4 projection = glm::ortho(0.0f,
+                                      (float)Screen::get().get_width(),
+                                      0.0f,
+                                      (float)Screen::get().get_height());
 
     static const std::string test_string = "The Quick Brown Fox jumped over the Lazy Dog";
 
@@ -206,7 +216,7 @@ void FontWriter::draw() {
     float wx = 10.0f;
     float wy = 10.0f;
 
-    const float font_pt = 12.0f;
+    const float font_pt = 8.0f;
     const float scale = font_pt / (float)base_font_size;
 
     for(unsigned int i=0; i<test_string.size(); i++) {
@@ -235,29 +245,9 @@ void FontWriter::draw() {
         wx += this->glyphs[c].horizontal_advance * scale;
     }
 
-    float tscale = 1.0f;
-    if(this->texture_width > 200) {
-        tscale = 200.0f / (float)this->texture_width;
+    if(this->display_charmap) {
+        this->add_charmap_to_screen();
     }
-    const float mx = 800 - this->texture_width * tscale - 10;
-    const float my = 600 - this->texture_height * tscale  - 10;
-
-    this->positions.push_back(glm::vec2(mx, my));
-    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my));
-    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my + this->texture_height * tscale ));
-    this->positions.push_back(glm::vec2(mx, my + this->texture_height * tscale ));
-
-    this->texture_coordinates.push_back(glm::vec2(0,1));
-    this->texture_coordinates.push_back(glm::vec2(1,1));
-    this->texture_coordinates.push_back(glm::vec2(1,0));
-    this->texture_coordinates.push_back(glm::vec2(0,0));
-
-    this->indices.push_back(this->positions.size()-4);
-    this->indices.push_back(this->positions.size()-3);
-    this->indices.push_back(this->positions.size()-2);
-    this->indices.push_back(this->positions.size()-4);
-    this->indices.push_back(this->positions.size()-2);
-    this->indices.push_back(this->positions.size()-1);
 
     this->static_load();
 
@@ -335,4 +325,58 @@ void FontWriter::static_load() {
     // after this command, any commands that use a vertex array will
     // no longer work
     glBindVertexArray(0);
+}
+
+void FontWriter::calculate_distance_field(uint8_t* distance_field, const std::vector<bool>& data, int width, int height) {
+    static const int sample_depth = 2;
+    static const float max_dist = std::sqrt((float)(2 * sample_depth * sample_depth));
+
+    for(int k=0; k<height; k++) {
+        for(int l=0; l<width; l++){
+
+            float distance = max_dist;
+            for(int j=k-sample_depth; j<=k+sample_depth; j++) {
+                for(int i=l-sample_depth; i<=l+sample_depth; i++) {
+                    if(i >= 0 && i < width && j >= 0 && j < height) {
+                        if(data[l + width*k] != data[i + width*j]) {
+                            float dist = std::sqrt((float)((i-l)*(i-l)) + (float)((j-k)*(j-k)));
+                            std::min(distance, dist);
+                        }
+                    }
+                }
+            }
+
+            if(data[l + width*k]) { // inside
+                distance_field[l+k*width] = (0.5f + (distance / max_dist) * 0.5f) * (uint8_t)128;
+            } else { // outside
+                distance_field[l+k*width] = (0.5f - (distance / max_dist) * 0.5f) * (uint8_t)128;
+            }
+        }
+    }
+}
+
+void FontWriter::add_charmap_to_screen() {
+    float tscale = 1.0f;
+    if(this->texture_width > 200) {
+        tscale = 200.0f / (float)this->texture_width;
+    }
+    const float mx = (float)Screen::get().get_width() - this->texture_width * tscale - 10;
+    const float my = (float)Screen::get().get_height() - this->texture_height * tscale  - 10;
+
+    this->positions.push_back(glm::vec2(mx, my));
+    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my));
+    this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my + this->texture_height * tscale ));
+    this->positions.push_back(glm::vec2(mx, my + this->texture_height * tscale ));
+
+    this->texture_coordinates.push_back(glm::vec2(0,1));
+    this->texture_coordinates.push_back(glm::vec2(1,1));
+    this->texture_coordinates.push_back(glm::vec2(1,0));
+    this->texture_coordinates.push_back(glm::vec2(0,0));
+
+    this->indices.push_back(this->positions.size()-4);
+    this->indices.push_back(this->positions.size()-3);
+    this->indices.push_back(this->positions.size()-2);
+    this->indices.push_back(this->positions.size()-4);
+    this->indices.push_back(this->positions.size()-2);
+    this->indices.push_back(this->positions.size()-1);
 }

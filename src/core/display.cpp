@@ -53,10 +53,11 @@ Display::Display() {
     glfwGetVersion(&major, &minor, &rev);
 
     // create a windowed mode window and its OpenGL context
-    this->m_width = 800;
-    this->m_height = 600;
-    this->m_window = glfwCreateWindow(this->m_width, this->m_height, "Yumi", NULL, NULL);
-    glViewport(0, 0, this->m_width, this->m_height);
+    const unsigned int width = Screen::get().get_width();
+    const unsigned int height = Screen::get().get_height();
+
+    this->m_window = glfwCreateWindow(width, height, "Yumi", NULL, NULL);
+    glViewport(0, 0, width, height);
 
     // check if the window is properly constructed
     if (!this->m_window) {
@@ -101,7 +102,7 @@ Display::Display() {
     //glfwSetInputMode(this->m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     // configure camera dimensions
-    Camera::get().set_aspect_ratio((float)this->m_width / (float)this->m_height);
+    Camera::get().set_aspect_ratio((float)width / (float)height);
     Camera::get().update();
 }
 
@@ -148,46 +149,13 @@ Display::~Display() {
     glfwTerminate();
 }
 
-/*
- * @fn get_aspect_ratio
- *
- * @brief get aspect ratio function
- *
- * @return the aspect ratio
- */
-float Display::get_aspect_ratio() const {
-    return (float)this->m_width / (float)this->m_height;
-}
-
- /*
- * @fn set_width
- *
- * @brief set width of the display
- *
- * @param width width of the display
- */
-void Display::set_width(const unsigned int &width) {
-    this->m_width = width;
-}
-
-/*
- * @fn set_height
- *
- * @brief set height of the display
- *
- * @param height height of the display
- */
-void Display::set_height(const unsigned int &height) {
-    this->m_height = height;
-}
-
  /*
  * @fn center_mouse_pointer
  *
  * @brief center the mouse pointer
  */
 void Display::center_mouse_pointer() {
-    glfwSetCursorPos(this->m_window, (float)m_width / 2.0f, (float)m_height / 2.0f);
+    glfwSetCursorPos(this->m_window, (float)Screen::get().get_width() / 2.0f, (float)Screen::get().get_height() / 2.0f);
 }
 
 /*
@@ -211,8 +179,8 @@ void Display::set_window_title(const std::string& window_name) {
 const glm::vec2 Display::get_cursor_position() const {
     double xpos, ypos;
     glfwGetCursorPos(this->m_window, &xpos, &ypos);
-    return glm::vec2((float)xpos / (float)this->m_width,
-                     (float)ypos / (float)this->m_height);
+    return glm::vec2((float)xpos / (float)Screen::get().get_width(),
+                     (float)ypos / (float)Screen::get().get_height());
 }
 
 /*
@@ -272,8 +240,12 @@ void Display::scroll_callback(GLFWwindow* window, double xoffset, double yoffset
  */
 void Display::window_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-    Display::get().set_width(width);
-    Display::get().set_height(height);
+
+    // update screen settings
+    Screen::get().set_width(width);
+    Screen::get().set_height(height);
+
+    // update camera settings
     Camera::get().set_aspect_ratio((float)width / (float)height);
     Camera::get().update();
 

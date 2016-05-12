@@ -25,6 +25,7 @@
 
 #include "core/display.h"
 #include "core/shader.h"
+#include "core/screen.h"
 
 #include "environment/terrain.h"
 #include "objects/objects_engine.h"
