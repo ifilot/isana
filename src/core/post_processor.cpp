@@ -35,7 +35,7 @@ PostProcessor::PostProcessor() {
     glActiveTexture(GL_TEXTURE2);
     glGenTextures(1, &this->texture_msaa);
     glBindTexture(GL_TEXTURE_2D, this->texture_msaa);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->msaa, GL_RGB, Screen::get().get_width(), Screen::get().get_height(), GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->msaa, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), GL_TRUE);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glActiveTexture(GL_TEXTURE2);
@@ -45,13 +45,13 @@ PostProcessor::PostProcessor() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Screen::get().get_width(), Screen::get().get_height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // FRAME BUFFER
 
-    glGenFramebuffers(1, &this->frame_buffer_ms);
-    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_ms);
+    glGenFramebuffers(1, &this->frame_buffer_msaa);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_msaa);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, this->texture_msaa, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->depth_msaa);
 
@@ -128,7 +128,7 @@ PostProcessor::PostProcessor() {
 }
 
 void PostProcessor::bind_frame_buffer() {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_ms);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_msaa);
     GLenum status;
     if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
@@ -137,10 +137,11 @@ void PostProcessor::bind_frame_buffer() {
 
 void PostProcessor::unbind_frame_buffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glEnable(GL_MULTISAMPLE);
 }
 
 void PostProcessor::draw() {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->frame_buffer_ms);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->frame_buffer_msaa);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frame_buffer);
     glBlitFramebuffer(0, 0, Screen::get().get_width(), Screen::get().get_height(), 0, 0, Screen::get().get_width(), Screen::get().get_height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

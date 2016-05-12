@@ -36,7 +36,7 @@
  */
 class PostProcessor {
 private:
-    GLuint frame_buffer_ms;         //!< reference to frameBuffer object
+    GLuint frame_buffer_msaa;         //!< reference to frameBuffer object
     GLuint frame_buffer;         //!< reference to frameBuffer object
 
     GLuint texture;              //!< reference to texture
