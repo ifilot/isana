@@ -207,7 +207,7 @@ void FontWriter::draw() {
                                       0.0f,
                                       (float)Screen::get().get_height());
 
-    static const std::string test_string = "The Quick Brown Fox jumped over the Lazy Dog";
+    static const std::string test_string = "DEMO ISANA";
 
     this->positions.clear();
     this->texture_coordinates.clear();
@@ -256,7 +256,7 @@ void FontWriter::draw() {
 
     this->shader->link_shader();
     this->shader->set_uniform(0, &projection[0][0]);
-    this->shader->set_uniform(1, &glm::vec3(0,0,0)[0]);
+    this->shader->set_uniform(1, &glm::vec3(1,0,0)[0]);
     this->shader->set_uniform(2, NULL);
 
     // load the vertex array

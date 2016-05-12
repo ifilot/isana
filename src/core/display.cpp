@@ -46,9 +46,6 @@ Display::Display() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-    // give hint for multisampling
-    glfwWindowHint(GLFW_SAMPLES, 16);
-
     int major, minor, rev;
     glfwGetVersion(&major, &minor, &rev);
 
@@ -95,15 +92,15 @@ Display::Display() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    // enable multisampling
-    glEnable(GL_MULTISAMPLE);
-
     // disable cursor (we are going to use our own)
     //glfwSetInputMode(this->m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     // configure camera dimensions
     Camera::get().set_aspect_ratio((float)width / (float)height);
     Camera::get().update();
+
+    // load PostProcessor
+    PostProcessor::get();
 }
 
 /**
@@ -114,6 +111,7 @@ Display::Display() {
  * Perform these instructions at the start of each frame
  */
 void Display::open_frame() {
+    PostProcessor::get().bind_frame_buffer();
     glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::get().update();
@@ -127,8 +125,12 @@ void Display::open_frame() {
  * Perform these instructions at the end of each frame
  */
 void Display::close_frame() {
-        glfwSwapBuffers(this->m_window);
-        glfwPollEvents();
+    PostProcessor::get().unbind_frame_buffer();
+    PostProcessor::get().draw();
+    FontWriter::get().draw();
+
+    glfwSwapBuffers(this->m_window);
+    glfwPollEvents();
 }
 
 /*
@@ -248,6 +250,9 @@ void Display::window_size_callback(GLFWwindow* window, int width, int height) {
     // update camera settings
     Camera::get().set_aspect_ratio((float)width / (float)height);
     Camera::get().update();
+
+    // update post processor
+    PostProcessor::get().window_reshape();
 
     // set mouse to center
     Display::get().center_mouse_pointer();

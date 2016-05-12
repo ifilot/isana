@@ -60,6 +60,7 @@ core/display.cpp \
 core/font_writer.cpp \
 core/mesh.cpp \
 core/object.cpp \
+core/post_processor.cpp \
 core/screen.cpp \
 core/shader.cpp \
 core/texture_manager.cpp \
