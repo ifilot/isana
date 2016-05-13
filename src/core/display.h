@@ -28,10 +28,9 @@
 #include <iostream>
 #include <boost/format.hpp>
 
-#include "camera.h"
-#include "visualizer.h"
-#include "screen.h"
-#include "post_processor.h"
+#include "core/camera.h"
+#include "core/visualizer.h"
+#include "core/screen.h"
 
 /**
  * @class Display class

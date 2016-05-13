@@ -51,6 +51,7 @@ public:
 
     enum {
         MAT4,
+        VEC4,
         VEC3,
         VEC2,
         TEXTURE,

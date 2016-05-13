@@ -27,6 +27,7 @@
 
 #include "screen.h"
 #include "shader.h"
+#include "mesh.h"
 
 /**
  * @class PostProcessor class
@@ -63,13 +64,9 @@ private:
     Shader* shader_blur_h;            //!< shader that performs horizontal blur
     Shader* shader_blur_v;            //!< shader that performs vertical blur
 
-    GLuint m_vertex_array_object;           //!< vertex array for rendering texture
-    GLuint m_vertex_array_buffers[2];       //!< vertex buffers for rendering single texture
-
-    std::vector<glm::vec2> positions;       //!< positions for rendering a texture
-    std::vector<unsigned int> indices;      //!< indices for rendering a texture
-
     unsigned int filter_flags;              //!< keeps track of what filters need to be applied
+
+    Mesh square_mesh;
 
 public:
     /**

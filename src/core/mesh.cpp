@@ -155,6 +155,20 @@ void Mesh::static_load() {
     glBindVertexArray(0);
 }
 
+void Mesh::load_square_mesh() {
+    this->positions.push_back(glm::vec3(-1, -1, 0));
+    this->positions.push_back(glm::vec3( 1, -1, 0));
+    this->positions.push_back(glm::vec3( 1,  1, 0));
+    this->positions.push_back(glm::vec3(-1,  1, 0));
+
+    this->indices.push_back(0);
+    this->indices.push_back(1);
+    this->indices.push_back(2);
+    this->indices.push_back(0);
+    this->indices.push_back(2);
+    this->indices.push_back(3);
+}
+
 /**
  * @brief      draw the mesh
  */

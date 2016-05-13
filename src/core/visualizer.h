@@ -30,6 +30,8 @@
 #include "environment/terrain.h"
 #include "objects/objects_engine.h"
 #include "core/font_writer.h"
+#include "core/post_processor.h"
+#include "ui/console.h"
 
 /**
  * @class Visualizer class
@@ -153,12 +155,18 @@ private:
     double angle;
 
     /**
-     * @var visualizer_state
+     * @var state
      * @brief interface state important for handling input
      */
-     unsigned int visualizer_state;
+    unsigned int state;
+
+    static const unsigned int STATE_CONSOLE = 1 << 0;
+
+    void pre_draw();
 
     void draw();
+
+    void post_draw();
 
     /* Singleton pattern; the function below are deleted */
     Visualizer(Visualizer const&)          = delete;

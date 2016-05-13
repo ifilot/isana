@@ -28,6 +28,8 @@
 PostProcessor::PostProcessor() {
     this->msaa = 4;
     this->filter_flags = 0x00000000;
+    this->square_mesh.load_square_mesh();
+    this->square_mesh.static_load();
 
     glActiveTexture(GL_TEXTURE2);
 
@@ -39,51 +41,6 @@ PostProcessor::PostProcessor() {
 
     // secondary buffer
     this->create_buffer(&this->depth_s, &this->texture_s, &this->frame_buffer_s);
-
-    this->positions.push_back(glm::vec2(-1, -1));
-    this->positions.push_back(glm::vec2( 1, -1));
-    this->positions.push_back(glm::vec2( 1,  1));
-    this->positions.push_back(glm::vec2(-1,  1));
-
-    this->indices.push_back(0);
-    this->indices.push_back(1);
-    this->indices.push_back(2);
-    this->indices.push_back(0);
-    this->indices.push_back(2);
-    this->indices.push_back(3);
-
-    // load the mesh into memory
-    unsigned int size = this->indices.size();
-
-    // generate a vertex array object and store it in the pointer
-    glGenVertexArrays(1, &this->m_vertex_array_object);
-    glBindVertexArray(this->m_vertex_array_object);
-
-    // generate a number of buffers (blocks of data on the GPU)
-    glGenBuffers(2, this->m_vertex_array_buffers);
-
-    /*
-     * POSITIONS
-     */
-
-    // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[0]);
-    // fill the buffer with data
-    glBufferData(GL_ARRAY_BUFFER, this->positions.size() * 2 * sizeof(float), &this->positions[0][0], GL_STATIC_DRAW);
-
-    // specifies the generic vertex attribute of index 0 to be enabled
-    glEnableVertexAttribArray(0);
-    // define an array of generic vertex attribute data
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    /*
-     * INDICES_VB
-     */
-
-    // bind a buffer identified by INDICES_VB and interpret this buffer as an array
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertex_array_buffers[1]);
-    // fill the buffer with data
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
 
     this->create_shader(this->shader_default, "assets/shaders/postproc");
     this->create_shader(this->shader_invert, "assets/filters/invert");
@@ -102,8 +59,7 @@ PostProcessor::PostProcessor() {
     this->shader_blur_v->set_uniform(2, &blur_radius);
     this->shader_blur_v->set_uniform(3, &glm::vec2(0,1)[0]);
 
-    // after this command, any commands that use a vertex array will
-    // no longer work
+    // unbind vertex array
     glBindVertexArray(0);
 }
 
@@ -181,8 +137,6 @@ PostProcessor::~PostProcessor() {
     glDeleteRenderbuffers(1, &this->depth_msaa);
     glDeleteTextures(1, &this->texture_msaa);
     glDeleteFramebuffers(1, &this->frame_buffer_msaa);
-
-    glDeleteBuffers(1, &this->m_vertex_array_object);
 }
 
 /**
@@ -271,13 +225,15 @@ void PostProcessor::render(Shader* shader) {
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, this->texture_active);
 
-    glBindVertexArray(this->m_vertex_array_object);
+    this->square_mesh.bind();
 
     shader->link_shader();
     shader->set_uniform(0, NULL); // set texture id
 
-    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    this->square_mesh.draw();
+
+    this->square_mesh.unbind();
+
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0);
 }

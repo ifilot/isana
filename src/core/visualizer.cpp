@@ -83,19 +83,22 @@ void Visualizer::run() {
 
         /* render the game state */
         num_frames++;                  /* increment frame counter */
-        Display::get().open_frame();   /* start new frame */
+
+        // perform pre-drawing operations
+        this->pre_draw();
 
         // start drawing from here
-
-        // draw topology
         this->draw();
+
+        // perform post-drawing operations (post processing)
+        this->post_draw();
 
         // stop drawing here
         Display::get().close_frame();  /* close the frame */
     }
 }
 
-/**
+/**this->visualizer_state &= ~STATE_CONSOLE;
  * @fn handle_key_down
  * @brief Handles keyboard input
  *
@@ -135,6 +138,16 @@ void Visualizer::handle_key_down(const int& key, const int& scancode, const int&
 
     if(key == 'E') {
         Camera::get().angle_cw();
+    }
+
+    if(key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+        if(this->state & STATE_CONSOLE) {
+            PostProcessor::get().disable_filter(PostProcessor::FILTER_BLUR);
+            this->state &= ~STATE_CONSOLE;
+        } else {
+            PostProcessor::get().enable_filter(PostProcessor::FILTER_BLUR);
+            this->state |= STATE_CONSOLE;
+        }
     }
 }
 
@@ -190,6 +203,12 @@ Visualizer::Visualizer():
 
     // add objects
     ObjectsEngine::get();
+
+    // load PostProcessor
+    PostProcessor::get();
+
+    // load Console
+    Console::get();
 }
 
 /**
@@ -202,10 +221,31 @@ Visualizer::Visualizer():
  * @return Game class
  */
 void Visualizer::update(double dt) {
-    ObjectsEngine::get().update(dt);
+    if(!(this->state & STATE_CONSOLE)) {
+        ObjectsEngine::get().update(dt);
+    }
+}
+
+void Visualizer::pre_draw() {
+    Display::get().open_frame();   /* start new frame */
+    PostProcessor::get().bind_frame_buffer();
+    glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    Camera::get().update();
 }
 
 void Visualizer::draw() {
     Terrain::get().draw();
     ObjectsEngine::get().draw();
+}
+
+void Visualizer::post_draw() {
+    PostProcessor::get().unbind_frame_buffer();
+    glDisable(GL_DEPTH_TEST);
+    PostProcessor::get().draw();
+
+    if(this->state & STATE_CONSOLE) {
+        Console::get().draw();
+    }
 }

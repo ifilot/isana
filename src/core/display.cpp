@@ -98,9 +98,6 @@ Display::Display() {
     // configure camera dimensions
     Camera::get().set_aspect_ratio((float)width / (float)height);
     Camera::get().update();
-
-    // load PostProcessor
-    PostProcessor::get();
 }
 
 /**
@@ -111,11 +108,7 @@ Display::Display() {
  * Perform these instructions at the start of each frame
  */
 void Display::open_frame() {
-    PostProcessor::get().bind_frame_buffer();
-    glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    Camera::get().update();
+
 }
 
 /**
@@ -126,10 +119,6 @@ void Display::open_frame() {
  * Perform these instructions at the end of each frame
  */
 void Display::close_frame() {
-    PostProcessor::get().unbind_frame_buffer();
-    PostProcessor::get().draw();
-    FontWriter::get().draw();
-
     glfwSwapBuffers(this->m_window);
     glfwPollEvents();
 }

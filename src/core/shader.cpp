@@ -95,6 +95,9 @@ void Shader::set_uniform(unsigned int uniform_id, const float* val) {
         case ShaderUniform::MAT4:
             glUniformMatrix4fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), GL_FALSE, val);
         break;
+        case ShaderUniform::VEC4:
+            glUniform4fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), val);
+        break;
         case ShaderUniform::VEC3:
             glUniform3fv(m_uniforms[uniform_id], this->shader_uniforms[uniform_id].get_size(), val);
         break;

@@ -66,7 +66,8 @@ core/shader.cpp \
 core/texture_manager.cpp \
 core/visualizer.cpp \
 environment/terrain.cpp \
-objects/objects_engine.cpp
+objects/objects_engine.cpp \
+ui/console.cpp
 SOURCES = $(patsubst %,$(SRCDIR)/%,$(_SOURCES))
 
 # add paths in sources to the VPATH

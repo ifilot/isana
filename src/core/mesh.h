@@ -81,6 +81,11 @@ public:
     void static_load();
 
     /**
+     * @brief      load a default square mesh
+     */
+    void load_square_mesh();
+
+    /**
      * @brief      draw the mesh
      */
     void draw() const;
