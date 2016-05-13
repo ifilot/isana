@@ -94,28 +94,28 @@ public:
      * @brief      pan the camera to the left
      */
     inline void pan_left() {
-        this->look_at -= glm::vec3(1, 0, 0);
+        this->look_at -= glm::vec3(5, 0, 0);
     }
 
     /**
      * @brief      pan the camera to the right
      */
     inline void pan_right() {
-        this->look_at -= glm::vec3(-1, 0, 0);
+        this->look_at -= glm::vec3(-5, 0, 0);
     }
 
     /**
      * @brief      pan the camera up
      */
     inline void pan_up() {
-        this->look_at -= glm::vec3(0, 1, 0);
+        this->look_at -= glm::vec3(0, 5, 0);
     }
 
     /**
      * @brief      pan the camera down
      */
     inline void pan_down() {
-        this->look_at -= glm::vec3(0, -1, 0);
+        this->look_at -= glm::vec3(0, -5, 0);
     }
 
     /**

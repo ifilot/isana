@@ -74,8 +74,8 @@ void TerrainTriangle::calculate_normal() {
  * @return      void
  */
 Terrain::Terrain() {
-    this->width = 50;
-    this->height = 50;
+    this->width = 100;
+    this->height = 100;
     this->sample_interval = 10;
 
     Shader* shader = new Shader("assets/shaders/terrain");

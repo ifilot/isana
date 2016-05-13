@@ -105,7 +105,7 @@ void Camera::calculate_position() {
  * @return      camera instance
  */
 Camera::Camera() {
-    this->look_at = glm::vec3(25.0f, 25.0f, 0.0f);
+    this->look_at = glm::vec3(50.0f, 50.0f, 0.0f);
     this->angle = 0.0f * 2.0f * M_PI; // orient to south
     this->distance = 50.0f;
 

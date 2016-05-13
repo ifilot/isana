@@ -64,7 +64,7 @@ ObjectsEngine::ObjectsEngine() {
     this->add_mesh("assets/meshes/tree.mesh");
 
     this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_position(glm::vec3(25, 25, 2));
+    this->objects.back()->set_position(glm::vec3(25, 25, Terrain::get().get_height(25,25)));
     this->objects.back()->load();
 
     this->add_shader("assets/shaders/turbine");
@@ -75,8 +75,8 @@ ObjectsEngine::ObjectsEngine() {
     for(unsigned int i=0; i<3; i++) {
         for(unsigned int j=0; j<3; j++) {
 
-            float x = (float)(5 + i * 5);
-            float y = (float)(28 + j * 5);
+            float x = (float)(50 + i * 5);
+            float y = (float)(50 + j * 5);
 
             float z = Terrain::get().get_height(x,y);
 
