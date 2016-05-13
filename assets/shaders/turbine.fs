@@ -9,6 +9,7 @@ in  vec3 normal_cameraspace;
 
 out vec4 fragColor;
 
+uniform vec4 ambient_color;
 uniform sampler2D tex;
 
 void main() {
@@ -28,13 +29,17 @@ void main() {
     float cosAlpha = clamp(dot(e,r), 0, 1);
 
     vec3 light_color = vec3(1,1,1);
-    float lightpower = 0.2f;
+    float lightpower = 1.0;
 
     float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
-    vec4 ambient = texture(tex, texcoord0.st);
-    vec3 diffuse = vec3(ambient) * light_color * lightpower * cosTheta;
+    vec3 color = texture(tex, texcoord0.st).rgb;
+    vec3 environment_light = ambient_color.rgb;
+    vec3 ambient = color;
+    vec3 diffuse = color * lightpower * cosTheta;
     vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
-    vec3 final_color = diffuse + specular;
 
-    fragColor = ambient + vec4(final_color, 0.0);
+    fragColor = vec4(0.2 * environment_light +
+                     0.2 * ambient +
+                     0.4 * diffuse +
+                     0.2 * specular, 1.0);
 }

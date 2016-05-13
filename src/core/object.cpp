@@ -92,6 +92,7 @@ Object::Object(Shader* _shader, const Mesh* _mesh) {
     this->add_property("model", ShaderUniform::MAT4, 1);
     this->add_property("view", ShaderUniform::MAT4, 1);
     this->add_property("mvp", ShaderUniform::MAT4, 1);
+    this->add_property("ambient_light", ShaderUniform::VEC4, 1);
 
     if(this->mesh->get_type() & Mesh::MESH_TEXTURE_COORDINATES) {
         this->add_property("tex", ShaderUniform::TEXTURE, 1);
@@ -119,6 +120,7 @@ void Object::draw() {
     this->properties[0].set_value(glm::value_ptr(model));
     this->properties[1].set_value(glm::value_ptr(view));
     this->properties[2].set_value(glm::value_ptr(mvp));
+    this->properties[3].set_value(glm::value_ptr(Sky::get().get_sky_color()));
 
     this->mesh->bind();
 

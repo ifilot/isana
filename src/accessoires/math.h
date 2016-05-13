@@ -18,40 +18,23 @@
 #                                                                         #
 #**************************************************************************/
 
-#ifndef _SKY_H
-#define _SKY_H
+#ifndef __MATH_H
+#define __MATH_H
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
+inline double square(double v) {
+    return v * v;
+}
 
-#include <iostream>
+inline float square(float v) {
+    return v * v;
+}
 
-#include "accessoires/math.h"
+inline double clip(double n, double lower, double upper) {
+    return std::max(lower, std::min(n, upper));
+}
 
-class Sky {
-private:
-    glm::vec4 sky_color;
-    double daytime;
+inline float clip(float n, float lower, float upper) {
+    return std::max(lower, std::min(n, upper));
+}
 
-public:
-    static Sky& get() {
-        static Sky sky_instance;
-        return sky_instance;
-    }
-
-    inline const glm::vec4& get_sky_color() const {
-        return this->sky_color;
-    }
-
-    void update(double dt);
-
-private:
-    Sky();
-
-    void set_sky_color();
-
-    Sky(Sky const&)          = delete;
-    void operator=(Sky const&)  = delete;
-};
-
-#endif // _SKY_H
+#endif // __MATH_H

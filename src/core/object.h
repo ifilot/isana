@@ -30,6 +30,7 @@
 
 #include "core/shader.h"
 #include "core/mesh.h"
+#include "environment/sky.h"
 
 /**
  * @brief      a property that will be parsed to the shader as a uniform
