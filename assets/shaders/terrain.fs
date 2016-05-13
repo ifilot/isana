@@ -25,15 +25,15 @@ void main() {
     // calculate reflection
     float cosAlpha = clamp(dot(e,r), 0, 1);
 
-    vec3 light_color = vec3(1,1,1);
+    vec3 light_color = vec3(249.f/255.f, 230.f/255.f, 174.f/255.f);
     float lightpower = 1.0f;
 
     float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
     vec3 color = color0;
-    vec4 ambient = vec4(color, 1.0);
-    vec3 diffuse = vec3(ambient) * light_color * lightpower * cosTheta;
+    vec4 ambient = vec4(light_color, 1.0);
+    vec3 diffuse = color * lightpower * cosTheta;
     vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
     vec3 final_color = diffuse + specular;
 
-    fragColor = ambient + vec4(final_color, 0.0);
+    fragColor = 0.2 * ambient + vec4(final_color, 1.0);
 }

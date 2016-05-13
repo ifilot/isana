@@ -65,6 +65,7 @@ core/screen.cpp \
 core/shader.cpp \
 core/texture_manager.cpp \
 core/visualizer.cpp \
+environment/sky.cpp \
 environment/terrain.cpp \
 objects/objects_engine.cpp \
 ui/console.cpp

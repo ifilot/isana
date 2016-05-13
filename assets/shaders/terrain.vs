@@ -28,8 +28,8 @@ void main() {
     vec3 position_cameraspace = (view * model * vec4(position, 1.0)).xyz;
     eye_cameraspace = vec3(0,0,0) - position_cameraspace;
 
-    vec3 light_worldspace = vec3(25, 25, 100);
-    vec3 light_cameraspace = (view * vec4(light_worldspace, 1.0)).xyz;
+    vec3 light_worldspace = vec3(1000000, 0, 100000);
+    vec3 light_cameraspace = (view * vec4(light_worldspace, 0)).xyz;
     lightdirection_cameraspace = light_cameraspace + eye_cameraspace;
 
     normal_cameraspace = (view * model * vec4(normal, 0)).xyz;

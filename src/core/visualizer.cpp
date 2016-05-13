@@ -217,6 +217,9 @@ Visualizer::Visualizer():
 
     // load PostProcessor
     PostProcessor::get();
+
+    // load environment
+    Sky::get();
 }
 
 /**
@@ -231,13 +234,15 @@ Visualizer::Visualizer():
 void Visualizer::update(double dt) {
     if(!(this->state & STATE_CONSOLE)) {
         ObjectsEngine::get().update(dt);
+        Sky::get().update(dt);
     }
 }
 
 void Visualizer::pre_draw() {
     Display::get().open_frame();   /* start new frame */
     PostProcessor::get().bind_frame_buffer();
-    glClearColor(249.f/255.f, 230.f/255.f, 174.f/255.f, 1.0f);
+    const glm::vec4& color = Sky::get().get_sky_color();
+    glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     Camera::get().update();

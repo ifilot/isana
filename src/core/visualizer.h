@@ -31,6 +31,7 @@
 #include "objects/objects_engine.h"
 #include "core/font_writer.h"
 #include "core/post_processor.h"
+#include "environment/sky.h"
 #include "ui/console.h"
 
 /**
