@@ -69,6 +69,8 @@ private:
     std::vector<glm::vec2> positions;       //!< positions for rendering a texture
     std::vector<unsigned int> indices;      //!< indices for rendering a texture
 
+    unsigned int filter_flags;              //!< keeps track of what filters need to be applied
+
 public:
     /**
      * @fn          get
@@ -80,6 +82,27 @@ public:
     static PostProcessor& get() {
         static PostProcessor post_processor_instance;
         return post_processor_instance;
+    }
+
+    static const unsigned int FILTER_BLUR = 1 << 0;
+    static const unsigned int FILTER_INVERT = 1 << 1;
+
+    /**
+     * @brief       enables a filter
+     *
+     * @param[in]   filter bit (see above)
+     */
+    inline void enable_filter(unsigned int bit) {
+        this->filter_flags |= bit;
+    }
+
+    /**
+     * @brief       disables a filter
+     *
+     * @param[in]   filter bit (see above)
+     */
+    inline void disable_filter(unsigned int bit) {
+        this->filter_flags &= ~bit;
     }
 
     /**
@@ -131,6 +154,11 @@ private:
      * @param[in]   pointer to the Shader class containing the filter
      */
     void pass(Shader* shader);
+
+    /**
+     * @brief      perform blurring
+     */
+    void blur();
 
     /**
      * @brief      swap passive and active buffers

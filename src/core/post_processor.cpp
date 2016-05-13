@@ -27,6 +27,8 @@
  */
 PostProcessor::PostProcessor() {
     this->msaa = 4;
+    this->filter_flags = 0x00000000;
+
     glActiveTexture(GL_TEXTURE2);
 
     // msaa buffer
@@ -85,8 +87,20 @@ PostProcessor::PostProcessor() {
 
     this->create_shader(this->shader_default, "assets/shaders/postproc");
     this->create_shader(this->shader_invert, "assets/filters/invert");
-    this->create_shader(this->shader_blur_h, "assets/filters/horizontal_blur");
-    this->create_shader(this->shader_blur_v, "assets/filters/vertical_blur");
+
+    // set blur shaders
+    const float blur_radius = 1.0f;
+    this->create_shader(this->shader_blur_h, "assets/filters/blur");
+    const float width = (float)Screen::get().get_width();
+    this->shader_blur_h->set_uniform(1, &width);
+    this->shader_blur_h->set_uniform(2, &blur_radius);
+    this->shader_blur_h->set_uniform(3, &glm::vec2(1,0)[0]);
+
+    this->create_shader(this->shader_blur_v, "assets/filters/blur");
+    const float height = (float)Screen::get().get_height();
+    this->shader_blur_v->set_uniform(1, &height);
+    this->shader_blur_v->set_uniform(2, &blur_radius);
+    this->shader_blur_v->set_uniform(3, &glm::vec2(0,1)[0]);
 
     // after this command, any commands that use a vertex array will
     // no longer work
@@ -142,6 +156,14 @@ void PostProcessor::window_reshape() {
     this->set_msaa_buffer(this->texture_msaa, this->depth_msaa);
     this->set_buffer(this->texture_p, this->depth_p);
     this->set_buffer(this->texture_s, this->depth_s);
+
+    this->shader_blur_h->link_shader();
+    const float width = (float)Screen::get().get_width();
+    this->shader_blur_h->set_uniform(1, &width);
+
+    this->shader_blur_h->link_shader();
+    const float height = (float)Screen::get().get_height();
+    this->shader_blur_v->set_uniform(1, &height);
 }
 
 /**
@@ -177,8 +199,13 @@ void PostProcessor::resample_buffer() {
  * @brief      perform series of filter passes on the active texture
  */
 void PostProcessor::apply_filters() {
-    this->pass(this->shader_blur_h);
-    this->pass(this->shader_blur_v);
+    if(this->filter_flags & FILTER_BLUR) {
+        this->blur();
+    }
+
+    if(this->filter_flags & FILTER_INVERT) {
+        this->pass(this->shader_invert);
+    }
 }
 
 /**
@@ -198,6 +225,14 @@ void PostProcessor::pass(Shader* shader) {
 
     // swap buffers
     this->swap_active_buffer();
+}
+
+/**
+ * @brief      perform blurring
+ */
+void PostProcessor::blur() {
+    this->pass(this->shader_blur_h);
+    this->pass(this->shader_blur_v);
 }
 
 /**
@@ -340,5 +375,12 @@ void PostProcessor::create_shader(Shader*& shader, const std::string& filename) 
     shader->add_attribute(ShaderAttribute::POSITION, "position");
     shader->add_uniform(ShaderUniform::TEXTURE, "text", 1);
     shader->set_texture_id(2); // corresponds to GL_TEXTURE2
+
+    if(filename.compare("assets/filters/blur") == 0) {
+        shader->add_uniform(ShaderUniform::FLOAT, "resolution", 1);
+        shader->add_uniform(ShaderUniform::FLOAT, "radius", 1);
+        shader->add_uniform(ShaderUniform::VEC2, "dir", 1);
+    }
+
     shader->bind_uniforms_and_attributes();
 }
