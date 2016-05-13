@@ -93,30 +93,22 @@ public:
     /**
      * @brief      pan the camera to the left
      */
-    inline void pan_left() {
-        this->look_at -= glm::vec3(5, 0, 0);
-    }
+    void pan_left();
 
     /**
      * @brief      pan the camera to the right
      */
-    inline void pan_right() {
-        this->look_at -= glm::vec3(-5, 0, 0);
-    }
+    void pan_right();
 
     /**
      * @brief      pan the camera up
      */
-    inline void pan_up() {
-        this->look_at -= glm::vec3(0, 5, 0);
-    }
+    void pan_up();
 
     /**
      * @brief      pan the camera down
      */
-    inline void pan_down() {
-        this->look_at -= glm::vec3(0, -5, 0);
-    }
+    void pan_down();
 
     /**
      * @brief      rotate the camera in the clock-wise direction
@@ -126,6 +118,13 @@ public:
         if(this->angle < 2.0f * M_PI) {
             this->angle += 2.0f * M_PI;
         }
+    }
+
+    /**
+     * @brief      reset the rotation angle
+     */
+    inline void reset_angle() {
+        this->angle = 0.0f;
     }
 
     /**

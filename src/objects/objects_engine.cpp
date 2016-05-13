@@ -21,6 +21,8 @@
 #include "objects/objects_engine.h"
 
 ObjectsEngine::ObjectsEngine() {
+    Console::get() << std::string(__FILE__) << ": Starting ObjectEngine class" << Console::endl;
+
     unsigned int prop_id = 0;
 
     TextureManager::get();
@@ -108,7 +110,7 @@ unsigned int ObjectsEngine::add_shader(const std::string& filename) {
 unsigned int ObjectsEngine::add_mesh(const std::string& filename) {
     this->meshes.push_back(new Mesh(filename));
 
-    std::cout << filename << std::endl;
+    Console::get() << std::string(__FILE__) + ": Loading mesh: " << filename << Console::endl;
 
     this->meshes.back()->static_load();
 

@@ -116,28 +116,34 @@ void Visualizer::handle_key_down(const int& key, const int& scancode, const int&
 
     }
 
-    if(key == 'A') {
-        Camera::get().pan_left();
-    }
+    if(!(this->state & STATE_CONSOLE)) {
+        if(key == 'A') {
+            Camera::get().pan_left();
+        }
 
-    if(key == 'D') {
-        Camera::get().pan_right();
-    }
+        if(key == 'D') {
+            Camera::get().pan_right();
+        }
 
-    if(key == 'S') {
-        Camera::get().pan_up();
-    }
+        if(key == 'S') {
+            Camera::get().pan_up();
+        }
 
-    if(key == 'W') {
-        Camera::get().pan_down();
-    }
+        if(key == 'W') {
+            Camera::get().pan_down();
+        }
 
-    if(key == 'Q') {
-        Camera::get().angle_ccw();
-    }
+        if(key == 'E') {
+            Camera::get().angle_ccw();
+        }
 
-    if(key == 'E') {
-        Camera::get().angle_cw();
+        if(key == 'Q') {
+            Camera::get().angle_cw();
+        }
+
+        if(key == 'R') {
+            Camera::get().reset_angle();
+        }
     }
 
     if(key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
@@ -168,12 +174,14 @@ void Visualizer::handle_mouse_key_down(const int& button, const int& action, con
 }
 
 void Visualizer::handle_scroll(double xoffset, double yoffset) {
-    if(yoffset > 0) {
-        Camera::get().zoom_out();
-    }
+    if(!(this->state & STATE_CONSOLE)) {
+        if(yoffset > 0) {
+            Camera::get().zoom_out();
+        }
 
-    if(yoffset < 0) {
-        Camera::get().zoom_in();
+        if(yoffset < 0) {
+            Camera::get().zoom_in();
+        }
     }
 }
 
@@ -201,14 +209,14 @@ Visualizer::Visualizer():
     /* make sure the display is loaded before loading the shader */
     Display::get();
 
+    // load Console
+    Console::get();
+
     // add objects
     ObjectsEngine::get();
 
     // load PostProcessor
     PostProcessor::get();
-
-    // load Console
-    Console::get();
 }
 
 /**

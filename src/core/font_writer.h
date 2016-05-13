@@ -30,6 +30,7 @@
 #include <freetype2/fttrigon.h>
 
 #include <iostream>
+#include <list>
 
 #include "shader.h"
 #include "screen.h"
@@ -77,6 +78,20 @@ private:
             horizontal_advance(0) {}
     };
 
+    struct TextLine {
+        unsigned int x;
+        unsigned int y;
+        std::string line;
+
+        TextLine(unsigned int _x,
+              unsigned int _y,
+              const std::string& _line) :
+                x(_x),
+                y(_y),
+                line(_line) {}
+
+    };
+
     std::vector<Glyph> glyphs;      //!< vector holding collection of glyphs
     unsigned int base_font_size;    //!< base font size for the texture
 
@@ -92,7 +107,10 @@ private:
     std::vector<glm::vec2> positions;               //!< vector holding screen character positions
     std::vector<glm::vec2> texture_coordinates;     //!< vector holding texture coordinates for the screen characters
 
+    std::list<TextLine> lines;
+
     bool display_charmap;                           //!< flag whether to print charmap to screen
+    bool is_cached;                                 //!< whether current lines are cached in memory
 
 public:
     /**
@@ -105,10 +123,16 @@ public:
         return font_writer_instance;
     }
 
+    void reset_lines();
+
+    void add_line(float x, float y, const std::string& line);
+
     /**
      * @brief Draw the characters on the screen
      */
     void draw();
+
+    void render_line(float x, float y, const std::string& line);
 
     /**
      * @brief Load the characters on the GPU

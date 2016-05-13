@@ -67,6 +67,42 @@ void Camera::set_aspect_ratio(const float& aspect_ratio) {
 }
 
 /**
+ * @brief      pan the camera to the left
+ */
+void Camera::pan_left() {
+    static const glm::vec4 v(-5, 0, 0, 1);
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    this->look_at += glm::vec3(rot * v);
+}
+
+/**
+ * @brief      pan the camera to the right
+ */
+void Camera::pan_right() {
+    static const glm::vec4 v(5, 0, 0, 1);
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    this->look_at += glm::vec3(rot * v);
+}
+
+/**
+ * @brief      pan the camera up
+ */
+void Camera::pan_up() {
+    static const glm::vec4 v(0, -5, 0, 1);
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    this->look_at += glm::vec3(rot * v);
+}
+
+/**
+ * @brief      pan the camera down
+ */
+void Camera::pan_down() {
+    static const glm::vec4 v(0, 5, 0, 1);
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    this->look_at += glm::vec3(rot * v);
+}
+
+/**
  * @brief       set the camera position
  *
  * @param       position    the position

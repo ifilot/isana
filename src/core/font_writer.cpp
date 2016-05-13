@@ -26,8 +26,9 @@
  * @return      FontWriter instance
  */
 FontWriter::FontWriter() {
-    this->base_font_size = 48;
+    this->base_font_size = 8;
     this->display_charmap = false;
+    this->is_cached = false;
 
     if(FT_Init_FreeType(&this->library)) {
         std::cerr << "FT_Init_FreeType failed" << std::endl;
@@ -52,150 +53,12 @@ FontWriter::FontWriter() {
     FT_Done_FreeType(this->library);
 }
 
-/**
- * @brief Place a font in a texture and store the positions
- */
-void FontWriter::generate_character_map() {
+void FontWriter::reset_lines() {
+    this->lines.clear();
+}
 
-    std::vector<std::vector<bool>> char_bitmaps(255);
-    unsigned int img_width = 0;         // total image width
-    unsigned int img_height = 0;        // total image height
-
-    unsigned int temp_x = 0;
-    unsigned int temp_y = 0;
-    unsigned int counter = 0;           // iteration counter
-
-    // collect all data of the glyphs and store them in temporary vectors
-    for(unsigned int i=32; i<=126; i++) {
-        counter++;
-        char c = (char)i;
-
-        FT_Face face;
-
-        if(FT_New_Face( this->library, "./assets/fonts/vera.ttf", 0, &face )) {
-            std::cerr << "FT_New_Face failed (there is probably a problem with your font file)" << std::endl;
-        }
-
-        FT_Set_Char_Size( face, base_font_size * 64, base_font_size * 64, 128, 128);
-
-        if(FT_Load_Glyph( face, FT_Get_Char_Index( face, c ), FT_LOAD_DEFAULT )) {
-            std::cerr << "FT_Load_Glyph failed" << std::endl;
-        }
-
-        // Move The Face's Glyph Into A Glyph Object.
-        FT_Glyph glyph;
-        if(FT_Get_Glyph( face->glyph, &glyph )) {
-            std::cerr << "FT_Load_Glyph failed" << std::endl;
-        }
-
-        FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, 0, 1 );
-        FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)glyph;
-        FT_Bitmap& bitmap=bitmap_glyph->bitmap;
-
-        const unsigned int width = bitmap.width;
-        const unsigned int height = bitmap.rows;
-
-        this->glyphs[i].width = face->glyph->metrics.width / 64;
-        this->glyphs[i].height = face->glyph->metrics.height / 64;
-        this->glyphs[i].horizontal_bearing = face->glyph->metrics.horiBearingX / 64;
-        this->glyphs[i].vertical_bearing = face->glyph->metrics.horiBearingY / 64;
-        this->glyphs[i].horizontal_advance =  face->glyph->metrics.horiAdvance / 64;
-
-        char_bitmaps[i] = std::vector<bool>(width * height, 0.0);
-        for(unsigned int j=0; j<(width*height); j++) {
-            char_bitmaps[i][j] = bitmap.buffer[j];
-        }
-
-        FT_Done_Face(face);
-
-        temp_x += width + 5;
-        temp_y = std::max(temp_y, height + 5);
-
-        if(counter % 10 == 0) {
-            counter = 0;
-
-            img_width = std::max(img_width, temp_x);
-            img_height += temp_y;
-
-            temp_x = 0;
-            temp_y = 0;
-        }
-    }
-
-    if(counter % 10 != 0) {
-        img_height += temp_y;
-    }
-
-    // store char map sizes
-    this->texture_width = img_width;
-    this->texture_height = img_height;
-
-    // create a texture from the stored information, set the base value
-    // to zero
-    uint8_t* expanded_data = new uint8_t[img_width * img_height];
-    for(unsigned int i=0; i<img_width * img_height; i++) {
-        expanded_data[i] = 0;
-    }
-    temp_y = 0;
-    unsigned int gy = 0;
-    unsigned int gx = 0;
-
-    counter = 0;
-    for(unsigned int i=32; i<=126; i++) {
-        counter++;
-        const unsigned int width = this->glyphs[i].width;
-        const unsigned int height = this->glyphs[i].height;
-
-        this->glyphs[i].x = gx;
-        this->glyphs[i].y = gy;
-
-        uint8_t* distance_field = new uint8_t[width * height];
-        this->calculate_distance_field(distance_field,
-                                       char_bitmaps[i],
-                                       width,
-                                       height);
-
-        for(unsigned int k=0; k<height; k++) {
-            for(unsigned int l=0; l<width; l++){
-                expanded_data[(l+gx)+(k+gy)*img_width] = distance_field[l + width*k];
-            }
-        }
-
-        this->glyphs[i].tx1 = (float)gx / (float)img_width;
-        this->glyphs[i].tx2 = (float)(gx + width) / (float)img_width;
-        this->glyphs[i].ty1 = (float)(gy + height) / (float)img_height;
-        this->glyphs[i].ty2 = (float)(gy) / (float)img_height;
-
-        gx += width + 5;
-        temp_y = std::max(temp_y, height + 5);
-
-        if(counter % 10 == 0) {
-            gx = 0;
-            gy += temp_y;
-            temp_y = 0;
-        }
-    }
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glActiveTexture(GL_TEXTURE1);
-    glGenTextures(1, &this->texture);
-    glBindTexture(GL_TEXTURE_2D, this->texture);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        this->texture_width,
-        this->texture_height,
-        0,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        expanded_data
-    );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
+void FontWriter::add_line(float x, float y, const std::string& line) {
+    this->lines.push_back(TextLine(x,y,line));
 }
 
 /**
@@ -207,20 +70,49 @@ void FontWriter::draw() {
                                       0.0f,
                                       (float)Screen::get().get_height());
 
-    static const std::string test_string = "DEMO ISANA";
-
     this->positions.clear();
     this->texture_coordinates.clear();
     this->indices.clear();
 
-    float wx = 10.0f;
-    float wy = 10.0f;
+    for(std::list<TextLine>::const_iterator iterator = lines.begin(), end = lines.end(); iterator != end; ++iterator) {
+        this->render_line((*iterator).x, (*iterator).y, (*iterator).line);
+    }
+
+    if(this->display_charmap) {
+        this->add_charmap_to_screen();
+    }
+
+    this->static_load();
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+
+    this->shader->link_shader();
+    this->shader->set_uniform(0, &projection[0][0]);
+    this->shader->set_uniform(1, &glm::vec3(0,0,0)[0]);
+    this->shader->set_uniform(2, NULL);
+
+    // load the vertex array
+    glBindVertexArray(m_vertex_array_object);
+
+    // draw the mesh using the indices
+    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+
+    // after this command, any commands that use a vertex array will
+    // no longer work
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void FontWriter::render_line(float x, float y, const std::string& line) {
+    float wx = x;
+    float wy = y;
 
     const float font_pt = 8.0f;
     const float scale = font_pt / (float)base_font_size;
 
-    for(unsigned int i=0; i<test_string.size(); i++) {
-        unsigned int c = (unsigned int)test_string.at(i);
+    for(unsigned int i=0; i<line.size(); i++) {
+        unsigned int c = (unsigned int)line.at(i);
 
         const float fx = wx + (float)this->glyphs[c].horizontal_bearing * scale;
         const float fy = wy - (float)(this->glyphs[c].height - this->glyphs[c].vertical_bearing) * scale;
@@ -244,31 +136,6 @@ void FontWriter::draw() {
 
         wx += this->glyphs[c].horizontal_advance * scale;
     }
-
-    if(this->display_charmap) {
-        this->add_charmap_to_screen();
-    }
-
-    this->static_load();
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, this->texture);
-
-    this->shader->link_shader();
-    this->shader->set_uniform(0, &projection[0][0]);
-    this->shader->set_uniform(1, &glm::vec3(1,0,0)[0]);
-    this->shader->set_uniform(2, NULL);
-
-    // load the vertex array
-    glBindVertexArray(m_vertex_array_object);
-
-    // draw the mesh using the indices
-    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-
-    // after this command, any commands that use a vertex array will
-    // no longer work
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 /**
@@ -328,7 +195,7 @@ void FontWriter::static_load() {
 }
 
 void FontWriter::calculate_distance_field(uint8_t* distance_field, const std::vector<bool>& data, int width, int height) {
-    static const int sample_depth = 2;
+    static const int sample_depth = 3;
     static const float max_dist = std::sqrt((float)(2 * sample_depth * sample_depth));
 
     for(int k=0; k<height; k++) {
@@ -379,4 +246,150 @@ void FontWriter::add_charmap_to_screen() {
     this->indices.push_back(this->positions.size()-4);
     this->indices.push_back(this->positions.size()-2);
     this->indices.push_back(this->positions.size()-1);
+}
+
+/**
+ * @brief Place a font in a texture and store the positions
+ */
+void FontWriter::generate_character_map() {
+
+    std::vector<std::vector<uint8_t>> char_bitmaps(255);
+    unsigned int img_width = 0;         // total image width
+    unsigned int img_height = 0;        // total image height
+
+    unsigned int temp_x = 0;
+    unsigned int temp_y = 0;
+    unsigned int counter = 0;           // iteration counter
+
+    // collect all data of the glyphs and store them in temporary vectors
+    for(unsigned int i=32; i<=126; i++) {
+        counter++;
+        char c = (char)i;
+
+        FT_Face face;
+
+        if(FT_New_Face( this->library, "./assets/fonts/sourcecodepro-regular.ttf", 0, &face )) {
+            std::cerr << "FT_New_Face failed (there is probably a problem with your font file)" << std::endl;
+        }
+
+        FT_Set_Char_Size( face, base_font_size * 64, base_font_size * 64, 128, 128);
+
+        if(FT_Load_Glyph( face, FT_Get_Char_Index( face, c ), FT_LOAD_DEFAULT )) {
+            std::cerr << "FT_Load_Glyph failed" << std::endl;
+        }
+
+        // Move The Face's Glyph Into A Glyph Object.
+        FT_Glyph glyph;
+        if(FT_Get_Glyph( face->glyph, &glyph )) {
+            std::cerr << "FT_Load_Glyph failed" << std::endl;
+        }
+
+        FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, 0, 1 );
+        FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)glyph;
+        FT_Bitmap& bitmap=bitmap_glyph->bitmap;
+
+        const unsigned int width = bitmap.width;
+        const unsigned int height = bitmap.rows;
+
+        this->glyphs[i].width = face->glyph->metrics.width / 64;
+        this->glyphs[i].height = face->glyph->metrics.height / 64;
+        this->glyphs[i].horizontal_bearing = face->glyph->metrics.horiBearingX / 64;
+        this->glyphs[i].vertical_bearing = face->glyph->metrics.horiBearingY / 64;
+        this->glyphs[i].horizontal_advance =  face->glyph->metrics.horiAdvance / 64;
+
+        char_bitmaps[i] = std::vector<uint8_t>(width * height, 0.0);
+        for(unsigned int j=0; j<(width*height); j++) {
+            char_bitmaps[i][j] = bitmap.buffer[j];
+        }
+
+        FT_Done_Face(face);
+
+        temp_x += width + 5;
+        temp_y = std::max(temp_y, height + 5);
+
+        if(counter % 10 == 0) {
+            counter = 0;
+
+            img_width = std::max(img_width, temp_x);
+            img_height += temp_y;
+
+            temp_x = 0;
+            temp_y = 0;
+        }
+    }
+
+    if(counter % 10 != 0) {
+        img_height += temp_y;
+    }
+
+    // store char map sizes
+    this->texture_width = img_width;
+    this->texture_height = img_height;
+
+    // create a texture from the stored information, set the base value
+    // to zero
+    std::vector<uint8_t> expanded_data(img_width * img_height);
+    for(unsigned int i=0; i<img_width * img_height; i++) {
+        expanded_data[i] = 0;
+    }
+    temp_y = 0;
+    unsigned int gy = 0;
+    unsigned int gx = 0;
+
+    counter = 0;
+    for(unsigned int i=32; i<=126; i++) {
+        counter++;
+        const unsigned int width = this->glyphs[i].width;
+        const unsigned int height = this->glyphs[i].height;
+
+        this->glyphs[i].x = gx;
+        this->glyphs[i].y = gy;
+
+        // uint8_t* distance_field = new uint8_t[width * height];
+        // this->calculate_distance_field(distance_field,
+        //                                char_bitmaps[i],
+        //                                width,
+        //                                height);
+
+        for(unsigned int k=0; k<height; k++) {
+            for(unsigned int l=0; l<width; l++){
+                expanded_data[(l+gx)+(k+gy)*img_width] = char_bitmaps[i][l + width*k];
+            }
+        }
+
+        this->glyphs[i].tx1 = (float)gx / (float)img_width;
+        this->glyphs[i].tx2 = (float)(gx + width) / (float)img_width;
+        this->glyphs[i].ty1 = (float)(gy + height) / (float)img_height;
+        this->glyphs[i].ty2 = (float)(gy) / (float)img_height;
+
+        gx += width + 5;
+        temp_y = std::max(temp_y, height + 5);
+
+        if(counter % 10 == 0) {
+            gx = 0;
+            gy += temp_y;
+            temp_y = 0;
+        }
+    }
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glActiveTexture(GL_TEXTURE1);
+    glGenTextures(1, &this->texture);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RED,
+        this->texture_width,
+        this->texture_height,
+        0,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        &expanded_data[0]
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

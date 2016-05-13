@@ -28,6 +28,7 @@
 #include "core/object.h"
 #include "core/texture_manager.h"
 #include "environment/terrain.h"
+#include "ui/console.h"
 
 /**
  * @class ObjectsEngine class

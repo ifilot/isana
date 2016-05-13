@@ -42,10 +42,10 @@ TESTDIR = ./test
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -I/opt/local/include
-	LDFLAGS += -L/opt/local/lib -lboost_regex-mt -lboost_unit_test_framework-mt
+	LDFLAGS += -L/opt/local/lib -lboost_regex-mt -lboost_unit_test_framework-mt -lboost_chrono-mt -lboost_system-mt
 else
 	CFLAGS +=
-	LDFLAGS += -lboost_regex -lboost_unit_test_framework
+	LDFLAGS += -lboost_regex -lboost_unit_test_framework -lboost_chrono -lboost_system
 endif
 
 # set the include folder where the .h files reside

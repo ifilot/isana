@@ -36,7 +36,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "armature.h"
+#include "core/armature.h"
 
 class Mesh {
 private:

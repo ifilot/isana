@@ -39,6 +39,8 @@
 // image libs
 #include <png.h>
 
+#include "ui/console.h"
+
 /*
  * Texture class
  * Handles reading a texture (image) file from the hard drive and placing it in

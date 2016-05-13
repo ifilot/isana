@@ -21,6 +21,7 @@
 #include "texture_manager.h"
 
 TextureManager::TextureManager() {
+    Console::get() << std::string(__FILE__) << ": Starting TextureManager class" << Console::endl;
     // load in the texture file
     this->load_image();
 }
@@ -38,7 +39,7 @@ Texture::Texture(const std::string& filename) {
 
     if(ext == ".PNG" || ext == ".png") {
         m_texture = png_texture_load(filename.c_str(), &width, &height);
-        std::cout << "Loading texture " << filename << std::endl;
+        Console::get() << std::string(__FILE__) << ": Loading texture " << filename << Console::endl;
         return;
     }
 

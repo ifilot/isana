@@ -21,6 +21,10 @@
 #ifndef _CONSOLE_H
 #define _CONSOLE_H
 
+#include <boost/chrono.hpp>
+#include <cmath>
+#include <iostream>
+
 #include "core/shader.h"
 #include "core/font_writer.h"
 #include "core/mesh.h"
@@ -29,6 +33,16 @@ class Console {
 private:
     Shader* shader;
     Mesh square_mesh;
+
+    unsigned int ly;
+    unsigned int ry;
+
+    boost::chrono::system_clock::time_point start;
+
+    std::vector<double> log_times;
+    std::vector<std::string> log;
+
+    std::string in_stream;
 
 public:
     /**
@@ -45,11 +59,29 @@ public:
 
     void draw();
 
+    void add_line_log(const std::string& line);
+
+    void add_to_log_stream(const std::string& line);
+
+    static const char endl;
+
 private:
     Console();
+
+    void add_line_left(const std::string& line);
+
+    void add_line_right(const std::string& line);
 
     Console(Console const&)          = delete;
     void operator=(Console const&)  = delete;
 };
+
+template <typename T>
+Console& operator << (Console& con, T const& value) {
+    std::stringstream stream;
+    stream << value;
+    con.add_to_log_stream(stream.str());
+    return con;
+}
 
 #endif //_CONSOLE_H

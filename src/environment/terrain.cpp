@@ -74,6 +74,8 @@ void TerrainTriangle::calculate_normal() {
  * @return      void
  */
 Terrain::Terrain() {
+    Console::get() << std::string(__FILE__) << ": Starting Terrain class" << Console::endl;
+
     this->width = 100;
     this->height = 100;
     this->sample_interval = 10;

@@ -23,6 +23,7 @@
 
 #include "accessoires/perlin_noise.h"
 #include "core/object.h"
+#include "ui/console.h"
 
 /**
  * @brief      single triangle in terrain object
