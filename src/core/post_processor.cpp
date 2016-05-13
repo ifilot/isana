@@ -85,6 +85,8 @@ PostProcessor::PostProcessor() {
 
     this->create_shader(this->shader_default, "assets/shaders/postproc");
     this->create_shader(this->shader_invert, "assets/filters/invert");
+    this->create_shader(this->shader_blur_h, "assets/filters/horizontal_blur");
+    this->create_shader(this->shader_blur_v, "assets/filters/vertical_blur");
 
     // after this command, any commands that use a vertex array will
     // no longer work
@@ -170,8 +172,8 @@ void PostProcessor::resample_buffer() {
  * @brief      perform series of filter passes on the active texture
  */
 void PostProcessor::apply_filters() {
-    this->pass(this->shader_invert);
-    this->pass(this->shader_invert);
+    this->pass(this->shader_blur_h);
+    this->pass(this->shader_blur_v);
 }
 
 /**

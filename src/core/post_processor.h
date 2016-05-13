@@ -60,6 +60,8 @@ private:
 
     Shader* shader_default;           //!< default shader
     Shader* shader_invert;            //!< shader that inverts the colors
+    Shader* shader_blur_h;            //!< shader that performs horizontal blur
+    Shader* shader_blur_v;            //!< shader that performs vertical blur
 
     GLuint m_vertex_array_object;           //!< vertex array for rendering texture
     GLuint m_vertex_array_buffers[2];       //!< vertex buffers for rendering single texture
