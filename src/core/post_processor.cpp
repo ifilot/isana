@@ -22,21 +22,36 @@
 
 PostProcessor::PostProcessor() {
     this->msaa = 4;
+    glActiveTexture(GL_TEXTURE2);
 
-    // RENDER BUFFER
-
+    // FRAME BUFFER 01
     glGenRenderbuffers(1, &this->depth_msaa);
     glBindRenderbuffer(GL_RENDERBUFFER, this->depth_msaa);
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, this->msaa, GL_DEPTH24_STENCIL8, Screen::get().get_width(), Screen::get().get_height());
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    // TEXTURE
-
     glActiveTexture(GL_TEXTURE2);
     glGenTextures(1, &this->texture_msaa);
-    glBindTexture(GL_TEXTURE_2D, this->texture_msaa);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, this->texture_msaa);
     glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->msaa, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+    glGenFramebuffers(1, &this->frame_buffer_msaa);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_msaa);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, this->texture_msaa, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->depth_msaa);
+    GLenum status;
+    if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // FRAME BUFFER 02
+
+    glGenRenderbuffers(1, &this->depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, this->depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, Screen::get().get_width(), Screen::get().get_height());
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glActiveTexture(GL_TEXTURE2);
     glGenTextures(1, &this->texture);
@@ -48,23 +63,10 @@ PostProcessor::PostProcessor() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // FRAME BUFFER
-
-    glGenFramebuffers(1, &this->frame_buffer_msaa);
-    glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_msaa);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, this->texture_msaa, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->depth_msaa);
-
-    GLenum status;
-    if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     glGenFramebuffers(1, &this->frame_buffer);
     glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->texture, 0);
-
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->depth);
     if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
     }
@@ -129,6 +131,7 @@ PostProcessor::PostProcessor() {
 
 void PostProcessor::bind_frame_buffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer_msaa);
+    glEnable(GL_MULTISAMPLE);
     GLenum status;
     if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
@@ -137,18 +140,13 @@ void PostProcessor::bind_frame_buffer() {
 
 void PostProcessor::unbind_frame_buffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glEnable(GL_MULTISAMPLE);
 }
 
 void PostProcessor::draw() {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->frame_buffer_msaa);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frame_buffer);
-    glBlitFramebuffer(0, 0, Screen::get().get_width(), Screen::get().get_height(), 0, 0, Screen::get().get_width(), Screen::get().get_height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    this->resample_buffer();
 
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, this->texture);
@@ -180,4 +178,11 @@ PostProcessor::~PostProcessor() {
     glDeleteTextures(1, &this->texture);
     glDeleteFramebuffers(1, &this->frame_buffer);
     glDeleteBuffers(1, &this->m_vertex_array_object);
+}
+
+void PostProcessor::resample_buffer() {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->frame_buffer_msaa);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frame_buffer);
+    glBlitFramebuffer(0, 0, Screen::get().get_width(), Screen::get().get_height(), 0, 0, Screen::get().get_width(), Screen::get().get_height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

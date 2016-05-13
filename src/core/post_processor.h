@@ -86,6 +86,8 @@ private:
     std::vector<glm::vec2> positions;
     std::vector<unsigned int> indices;
 
+    void resample_buffer();
+
     PostProcessor(PostProcessor const&)          = delete;
     void operator=(PostProcessor const&)  = delete;
 };
