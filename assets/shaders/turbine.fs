@@ -9,7 +9,7 @@ in  vec3 normal_cameraspace;
 
 out vec4 fragColor;
 
-uniform vec4 ambient_color;
+uniform vec4 ambient_light;
 uniform sampler2D tex;
 
 void main() {
@@ -25,21 +25,20 @@ void main() {
 
     // calculate diffuse
     float cosTheta = clamp(dot(n, l), 0, 1);
+
     // calculate reflection
     float cosAlpha = clamp(dot(e,r), 0, 1);
 
-    vec3 light_color = vec3(1,1,1);
-    float lightpower = 1.0;
+    vec3 light_color = vec3(ambient_light);
+    float lightpower = 1.5f;
 
-    float z = clamp((position0.z + 5.0f) / 10.0, 0, 1);
+    // set vertex color
     vec3 color = texture(tex, texcoord0.st).rgb;
-    vec3 environment_light = ambient_color.rgb;
-    vec3 ambient = color;
-    vec3 diffuse = color * lightpower * cosTheta;
-    vec3 specular = vec3(1,1,1) * light_color * lightpower * pow(cosAlpha, 5);
 
-    fragColor = vec4(0.2 * environment_light +
-                     0.2 * ambient +
-                     0.4 * diffuse +
-                     0.2 * specular, 1.0);
+    vec3 base = color * 0.2;
+    vec3 ambient = color * light_color * 0.4;
+    vec3 diffuse = color * lightpower * cosTheta * 0.2;
+    vec3 specular = vec3(1,1,1) * lightpower * pow(cosAlpha, 5);
+
+    fragColor = vec4(base + ambient + diffuse + specular, 1.0);
 }

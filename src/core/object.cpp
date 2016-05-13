@@ -34,8 +34,14 @@ ObjectProperty::ObjectProperty(const std::string& _name, unsigned int _type, uns
         case ShaderUniform::MAT4:
             this->base_size = 16;
             break;
+        case ShaderUniform::VEC4:
+            this->base_size = 4;
+            break;
         case ShaderUniform::VEC3:
             this->base_size = 3;
+            break;
+        case ShaderUniform::VEC2:
+            this->base_size = 2;
             break;
         case ShaderUniform::TEXTURE:
             this->base_size = 1;
@@ -116,11 +122,12 @@ void Object::draw() {
     glm::mat4 projection = Camera::get().get_projection();
     glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position) * this->rotation * this->scale;
     glm::mat4 mvp = projection * view * model;
+    glm::vec4 sky_color = Sky::get().get_sky_color();
 
     this->properties[0].set_value(glm::value_ptr(model));
     this->properties[1].set_value(glm::value_ptr(view));
     this->properties[2].set_value(glm::value_ptr(mvp));
-    this->properties[3].set_value(glm::value_ptr(Sky::get().get_sky_color()));
+    this->properties[3].set_value(glm::value_ptr(sky_color));
 
     this->mesh->bind();
 

@@ -92,7 +92,7 @@ void Mesh::static_load() {
          // up the vertex_id
         vertex_id++;
         // bind a buffer identified by POSITION_VB and interpret this buffer as an array
-        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[NORMAL_VB]);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[COLOR_VB]);
         // fill the buffer with data
         glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 3 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
 

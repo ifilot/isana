@@ -32,6 +32,8 @@ void Sky::update(double dt) {
     }
 
     this->set_sky_color();
+
+    this->sky_color[3] = 1.0f;
 }
 
 void Sky::set_sky_color() {
