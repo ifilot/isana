@@ -338,5 +338,7 @@ void PostProcessor::create_shader(Shader*& shader, const std::string& filename) 
         shader->add_uniform(ShaderUniform::VEC2, "dir", 1);
     }
 
+    this->square_mesh.bind();
     shader->bind_uniforms_and_attributes();
+    this->square_mesh.unbind();
 }

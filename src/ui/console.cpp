@@ -33,7 +33,9 @@ Console::Console() {
     this->shader = new Shader("assets/shaders/console");
     this->shader->add_attribute(ShaderAttribute::POSITION, "position");
     this->shader->add_uniform(ShaderUniform::VEC4, "back_color", 1);
+    this->square_mesh.bind();
     this->shader->bind_uniforms_and_attributes();
+    this->square_mesh.unbind();
     this->shader->set_uniform(0, &glm::vec4(1.0f, 1.0f, 1.0f, 0.5f)[0]);
 
     this->add_line_log(std::string(__FILE__) + ": Starting log...");
