@@ -102,6 +102,7 @@ void PostProcessor::bind_frame_buffer() {
     GLenum status;
     if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "glCheckFramebufferStatus: error " << status << std::endl;
+        std::cerr << __FILE__ << "(" << __LINE__ << ")" << std::endl;
     }
 
     this->frame_buffer_active = this->frame_buffer_p;
@@ -124,9 +125,13 @@ void PostProcessor::unbind_frame_buffer() {
  * @brief      draw the result of the post processing to the screen
  */
 void PostProcessor::draw() {
+    // resample the buffer from msaa to regular
     this->resample_buffer();
+
+    // apply filtering operations
     this->apply_filters();
 
+    // render the output to the screen
     this->render(this->shader_default);
 }
 
@@ -135,8 +140,8 @@ void PostProcessor::draw() {
  */
 void PostProcessor::window_reshape() {
     this->set_msaa_buffer(this->texture_msaa, this->depth_msaa);
-    this->set_msaa_buffer(this->texture_p, this->depth_p);
-    this->set_msaa_buffer(this->texture_s, this->depth_s);
+    this->set_buffer(this->texture_p, this->depth_p);
+    this->set_buffer(this->texture_s, this->depth_s);
 }
 
 /**
@@ -304,12 +309,12 @@ void PostProcessor::create_buffer(GLuint* render_buffer, GLuint* texture, GLuint
 void PostProcessor::set_msaa_buffer(GLuint texture, GLuint frame_buffer) {
     // resize regular buffer
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->msaa, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
     glBindRenderbuffer(GL_RENDERBUFFER, frame_buffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, Screen::get().get_width(), Screen::get().get_height());
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, this->msaa, GL_DEPTH24_STENCIL8, Screen::get().get_width(), Screen::get().get_height());
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
@@ -318,12 +323,12 @@ void PostProcessor::set_msaa_buffer(GLuint texture, GLuint frame_buffer) {
  */
 void PostProcessor::set_buffer(GLuint texture, GLuint frame_buffer) {
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->msaa, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Screen::get().get_width(), Screen::get().get_height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindRenderbuffer(GL_RENDERBUFFER, frame_buffer);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, this->msaa, GL_DEPTH24_STENCIL8, Screen::get().get_width(), Screen::get().get_height());
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, Screen::get().get_width(), Screen::get().get_height());
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
