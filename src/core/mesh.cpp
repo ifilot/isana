@@ -408,7 +408,7 @@ void Mesh::load_mesh_from_x_file(const std::string& filename) {
     std::vector<std::string> bone_names;
 
     boost::regex regex_open_frame("^\\s*Frame Armature_([A-Za-z_0-9]+) \\{");
-    boost::regex regex_close_frame("^\\s*\\}");
+    boost::regex regex_close_frame("^\\s*\\}.*");
     boost::regex regex_mesh("^\\s*Mesh \\{ ");
     boost::regex regex_normals("^\\s*MeshNormals \\{ ");
     boost::regex regex_textures("^\\s*MeshTextureCoords \\{ ");

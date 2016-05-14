@@ -25,8 +25,6 @@ ObjectsEngine::ObjectsEngine() {
 
     unsigned int prop_id = 0;
 
-    TextureManager::get();
-
     // add custom shader
     this->add_shader("assets/shaders/coordinate_system");
 
@@ -62,13 +60,15 @@ ObjectsEngine::ObjectsEngine() {
     this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(1,0,0)));
     this->objects.back()->load();
 
-    this->add_shader("assets/shaders/tree");
-    this->add_mesh("assets/meshes/tree.mesh");
+    const unsigned int hq_tex_id = TextureManager::get().load_texture("assets/png/hq.png");
+    this->add_shader("assets/shaders/turbine");
+    this->add_mesh("assets/meshes/hq.x");
 
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_position(glm::vec3(25, 25, Terrain::get().get_height(25,25)));
+    this->objects.push_back(new BuildingHeadQuarters(this->shaders.back(), this->meshes.back(), hq_tex_id));
+    this->objects.back()->set_position(glm::vec3(40, 50, Terrain::get().get_height(40,50)));
     this->objects.back()->load();
 
+    const unsigned int turbine_tex_id = TextureManager::get().load_texture("assets/png/turbine.png");
     this->add_shader("assets/shaders/turbine");
     this->add_mesh("assets/meshes/turbine.x");
 
@@ -82,7 +82,7 @@ ObjectsEngine::ObjectsEngine() {
 
             float z = Terrain::get().get_height(x,y);
 
-            this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
+            this->objects.push_back(new BuildingTurbine(this->shaders.back(), this->meshes.back(), turbine_tex_id));
             this->objects.back()->set_position(glm::vec3(x, y, z));
             this->objects.back()->load();
        }

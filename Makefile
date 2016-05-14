@@ -68,6 +68,8 @@ core/visualizer.cpp \
 environment/sky.cpp \
 environment/terrain.cpp \
 objects/objects_engine.cpp \
+objects/buildings/hq.cpp \
+objects/buildings/turbine.cpp \
 ui/console.cpp
 SOURCES = $(patsubst %,$(SRCDIR)/%,$(_SOURCES))
 

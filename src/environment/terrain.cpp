@@ -212,7 +212,7 @@ void Terrain::generate_terrain(Mesh* mesh) {
  * @return      void
  */
 void Terrain::generate_height_map() {
-    PerlinNoiseGenerator pn(1.0f, 1.2f, 5, 2763226322);
+    PerlinNoiseGenerator pn(1.0f, 2.2f, 5, 2763226322);
     this->heights.resize((this->width + 1) * (this->height + 1), 0.0);
     for(unsigned int j=0; j<= this->height; j+=this->sample_interval) {
         for(unsigned int i=0; i<= this->width; i+=this->sample_interval) {

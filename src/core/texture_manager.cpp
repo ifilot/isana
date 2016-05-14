@@ -22,13 +22,20 @@
 
 TextureManager::TextureManager() {
     Console::get() << std::string(__FILE__) << ": Starting TextureManager class" << Console::endl;
-    // load in the texture file
-    this->load_image();
 }
 
-void TextureManager::load_image() {
-    this->texture = new Texture("./assets/png/turbine_texture.png");
-    this->texture->bind(0);
+unsigned int TextureManager::load_texture(const std::string& filename) {
+    this->textures.push_back(new Texture(filename));
+    return this->textures.size() - 1;
+}
+
+void TextureManager::bind_texture(unsigned int texture_id) {
+    this->textures[texture_id]->bind();
+}
+
+void TextureManager::unbind() {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture::Texture(const std::string& filename) {
@@ -52,11 +59,8 @@ Texture::~Texture() {
     glDeleteTextures(1, &m_texture);
 }
 
-void Texture::bind(unsigned int unit) {
-
-    assert(unit >= 0 && unit <= 31);
-
-    glActiveTexture(GL_TEXTURE0 + unit);
+void Texture::bind() {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture);
 }
 

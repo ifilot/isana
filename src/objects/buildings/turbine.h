@@ -1,6 +1,6 @@
 /**************************************************************************
 #                                                                         #
-#   This file is part of ISANA                                            #
+#   This file is part of ISANA                                             #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
@@ -18,65 +18,22 @@
 #                                                                         #
 #**************************************************************************/
 
-#ifndef _OBJECTS_ENGINE
-#define _OBJECTS_ENGINE
+#ifndef _TURBINE_H
+#define _TURBINE_H
 
-#include <vector>
-
-#include "core/mesh.h"
-#include "core/shader.h"
 #include "core/object.h"
-#include "core/texture_manager.h"
-#include "environment/terrain.h"
-#include "objects/buildings/hq.h"
-#include "objects/buildings/turbine.h"
-#include "ui/console.h"
 
-/**
- * @class ObjectsEngine class
- *
- * @brief class handling the objects_engine
- *
- */
-class ObjectsEngine {
+class BuildingTurbine : public Object {
 private:
-    std::vector<Mesh*> meshes;
-    std::vector<Shader*> shaders;
-
-    std::vector<Object*> objects;
 
 public:
-
-    /**
-     * @fn          get
-     *
-     * @brief       get a reference to the objects_engine
-     *
-     * @return      reference to the objects_engine object (singleton pattern)
-     */
-    static ObjectsEngine& get() {
-        static ObjectsEngine objects_engine_instance;
-        return objects_engine_instance;
-    }
+    using Object::Object;
 
     void update(double dt);
 
-    void draw();
-
-    unsigned int add_shader(const std::string& filename);
-
-    unsigned int add_mesh(const std::string& filename);
-
 private:
-    /**
-     * @brief       objects_engine constructor
-     *
-     * @return      objects_engine instance
-     */
-    ObjectsEngine();
 
-    ObjectsEngine(ObjectsEngine const&)          = delete;
-    void operator=(ObjectsEngine const&)  = delete;
+
 };
 
-#endif // _OBJECTS_ENGINE
+#endif // _TURBINE_H

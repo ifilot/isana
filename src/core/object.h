@@ -30,6 +30,7 @@
 
 #include "core/shader.h"
 #include "core/mesh.h"
+#include "core/texture_manager.h"
 #include "environment/sky.h"
 
 /**
@@ -103,9 +104,10 @@ private:
  * @brief      Object class
  */
 class Object {
-private:
+protected:
     Shader* shader;                 //!< pointer to shader object
     const Mesh* mesh;               //!< pointer to mesh object
+    int texture_id;                 //!< texture id
 
     std::vector<ObjectProperty> properties;     //!< vector holding ObjectProperties
 
@@ -132,6 +134,15 @@ public:
     Object(Shader* shader, const Mesh* _mesh);
 
     /**
+     * @brief      Object constructor
+     *
+     * @param      shader  pointer to shader
+     * @param[in]  _mesh   pointer to mesh
+     * @param[in]  texture_id   texture id
+     */
+    Object(Shader* shader, const Mesh* _mesh, int _texture_id);
+
+    /**
      * @brief      draw the object
      */
     void draw();
@@ -146,7 +157,7 @@ public:
      *
      * @param[in]  dt    time step
      */
-    void update(double dt);
+    virtual void update(double dt);
 
     /**
      * @brief      add property to the object

@@ -50,7 +50,7 @@ class Texture {
 public:
     Texture(const std::string& filename);
 
-    void bind(unsigned int unit);
+    void bind();
 
     virtual ~Texture();
 protected:
@@ -69,12 +69,16 @@ public:
         return instance;
     }
 
+    unsigned int load_texture(const std::string& filename);
+
+    void bind_texture(unsigned int texture_id);
+
+    void unbind();
+
 private:
     TextureManager();
 
-    void load_image();
-
-    Texture* texture;
+    std::vector<Texture*> textures;
 
     // Singleton pattern
     TextureManager(TextureManager const&)          = delete;
