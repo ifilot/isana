@@ -94,12 +94,12 @@ void Mesh::static_load() {
         // bind a buffer identified by POSITION_VB and interpret this buffer as an array
         glBindBuffer(GL_ARRAY_BUFFER, m_vertex_array_buffers[COLOR_VB]);
         // fill the buffer with data
-        glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 3 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, this->colors.size() * 4 * sizeof(float), &this->colors[0][0], GL_STATIC_DRAW);
 
         // specifies the generic vertex attribute of index 0 to be enabled
         glEnableVertexAttribArray(vertex_id);
         // define an array of generic vertex attribute data
-        glVertexAttribPointer(vertex_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(vertex_id, 4, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
     if(this->texture_coordinates.size() > 0) {

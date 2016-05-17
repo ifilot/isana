@@ -2,10 +2,10 @@
 
 in vec3 position;
 in vec3 normal;
-in vec3 color;
+in vec4 color;
 
 out vec3 position0;
-out vec3 color0;
+out vec4 color0;
 
 out vec3 position_worldspace;
 out vec3 eye_cameraspace;

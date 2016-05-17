@@ -39,7 +39,7 @@ private:
     glm::vec3 n3;
 
     glm::vec3 normal;
-    glm::vec3 color;
+    glm::vec4 color;
 
 public:
 
@@ -58,7 +58,7 @@ public:
      *
      * @param[in]  _color  color
      */
-    inline void set_color(const glm::vec3& _color) {
+    inline void set_color(const glm::vec4& _color) {
         this->color = _color;
     }
 
@@ -126,7 +126,7 @@ public:
      *
      * @return     color.
      */
-    inline const glm::vec3& get_color() const {
+    inline const glm::vec4& get_color() const {
         return this->color;
     }
 

@@ -37,7 +37,7 @@ TerrainTriangle::TerrainTriangle(const glm::vec3& _p1, const glm::vec3& _p2, con
     this->n2 = _n2;
     this->n3 = _n3;
 
-    this->color = glm::vec3(0,0,0);
+    this->color = glm::vec4(0,0,0,0);
 
     this->calculate_normal();
 }
@@ -142,6 +142,71 @@ void Terrain::generate_terrain(Mesh* mesh) {
         }
     }
 
+    // add bounding boxes
+    const unsigned surface_triangle_idx = indices_eff.size();
+    const float hh = -10.0f;
+    for(unsigned int i=0; i<this->width; i++) {
+        positions_eff.push_back(glm::vec3(i, 0, hh));
+        positions_eff.push_back(glm::vec3(i+1, 0, hh));
+        positions_eff.push_back(glm::vec3(i+1, 0, this->heights[this->idx(i+1,0)]));
+        positions_eff.push_back(glm::vec3(i, 0, this->heights[this->idx(i,0)]));
+
+        unsigned int idx = positions_eff.size() - 4;
+
+        indices_eff.push_back(idx);
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+3);
+
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+2);
+        indices_eff.push_back(idx+3);
+
+        positions_eff.push_back(glm::vec3(i, height, hh));
+        positions_eff.push_back(glm::vec3(i+1, height, hh));
+        positions_eff.push_back(glm::vec3(i+1, height, this->heights[this->idx(i+1,height)]));
+        positions_eff.push_back(glm::vec3(i, height, this->heights[this->idx(i,height)]));
+
+        idx = positions_eff.size() - 4;
+
+        indices_eff.push_back(idx);
+        indices_eff.push_back(idx+3);
+        indices_eff.push_back(idx+1);
+
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+3);
+        indices_eff.push_back(idx+2);
+
+        positions_eff.push_back(glm::vec3(0, i, hh));
+        positions_eff.push_back(glm::vec3(0, i+1, hh));
+        positions_eff.push_back(glm::vec3(0, i+1, this->heights[this->idx(0,i+1)]));
+        positions_eff.push_back(glm::vec3(0, i, this->heights[this->idx(0,i)]));
+
+        idx = positions_eff.size() - 4;
+
+        indices_eff.push_back(idx);
+        indices_eff.push_back(idx+3);
+        indices_eff.push_back(idx+1);
+
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+3);
+        indices_eff.push_back(idx+2);
+
+        positions_eff.push_back(glm::vec3(height, i, hh));
+        positions_eff.push_back(glm::vec3(height, i+1, hh));
+        positions_eff.push_back(glm::vec3(height, i+1, this->heights[this->idx(height,i+1)]));
+        positions_eff.push_back(glm::vec3(height, i, this->heights[this->idx(height,i)]));
+
+        idx = positions_eff.size() - 4;
+
+        indices_eff.push_back(idx);
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+3);
+
+        indices_eff.push_back(idx+1);
+        indices_eff.push_back(idx+2);
+        indices_eff.push_back(idx+3);
+    }
+
     normals_eff.resize(positions_eff.size(), glm::vec3(0,0,0));
     for(unsigned int i=0; i<indices_eff.size(); i+=3) {
         glm::vec3 v1 = positions_eff[indices_eff[i]];
@@ -171,14 +236,18 @@ void Terrain::generate_terrain(Mesh* mesh) {
                                                   normals_eff[indices_eff[i+0]],
                                                   normals_eff[indices_eff[i+1]],
                                                   normals_eff[indices_eff[i+2]]));
-        this->triangles.back().set_color(glm::vec3(161.f / 255.f, 102.f / 255.f, 62.f / 255.f) +
-                                         glm::vec3(1.0f) * (float)pn.get_random_number() * 0.05f);
+        if(i < surface_triangle_idx) {
+            this->triangles.back().set_color(glm::vec4(161.f / 255.f, 102.f / 255.f, 62.f / 255.f, 1.0) +
+                                         glm::vec4(glm::vec3(1.0f) * (float)pn.get_random_number() * 0.05f, 1.0));
+        } else {
+            this->triangles.back().set_color(glm::vec4(0,0,0,0));
+        }
     }
 
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
-    std::vector<glm::vec3> colors;
+    std::vector<glm::vec4> colors;
 
     for(unsigned int i=0; i<this->triangles.size(); i++) {
         indices.push_back(i*3 + 0);

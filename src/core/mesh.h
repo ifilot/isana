@@ -43,7 +43,7 @@ private:
     Armature* armature;                                 //!< pointer to armature class
     std::vector<glm::vec3> positions;                   //!< vector holding positions
     std::vector<glm::vec3> normals;                     //!< vector holding vertex normals
-    std::vector<glm::vec3> colors;                      //!< vector holding colors
+    std::vector<glm::vec4> colors;                      //!< vector holding colors
     std::vector<glm::vec2> texture_coordinates;         //!< vector holding texture coordinates
     std::vector<unsigned int> indices;                  //!< vector holding set of indices
 
@@ -177,7 +177,7 @@ public:
      *
      * @param[in]  _colors  The colors
      */
-    inline void set_colors(const std::vector<glm::vec3>& _colors) {
+    inline void set_colors(const std::vector<glm::vec4>& _colors) {
         this->colors = _colors;
     }
 
@@ -213,7 +213,7 @@ public:
      *
      * @return     pointer to colors
      */
-    inline const glm::vec3* get_colors_start() const {
+    inline const glm::vec4* get_colors_start() const {
         return &this->colors[0];
     }
 

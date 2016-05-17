@@ -1,7 +1,7 @@
 #version 330 core
 
 in  vec3 position0;
-in  vec3 color0;
+in  vec4 color0;
 in  vec3 position_worldspace;
 in  vec3 eye_cameraspace;
 in  vec3 lightdirection_cameraspace;
@@ -32,12 +32,12 @@ void main() {
     float lightpower = 1.5f;
 
     // set vertex color
-    vec3 color = color0;
+    vec3 color = vec3(color0);
 
     vec3 base = color * 0.2;
     vec3 ambient = color * light_color * 0.4;
     vec3 diffuse = color * lightpower * cosTheta * 0.2;
     vec3 specular = vec3(1,1,1) * lightpower * pow(cosAlpha, 5);
 
-    fragColor = vec4(base + ambient + diffuse + specular, 1.0);
+    fragColor = vec4(base + color0.a * (ambient + diffuse + specular), 1.0);
 }

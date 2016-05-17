@@ -23,43 +23,6 @@
 ObjectsEngine::ObjectsEngine() {
     Console::get() << std::string(__FILE__) << ": Starting ObjectEngine class" << Console::endl;
 
-    unsigned int prop_id = 0;
-
-    // add custom shader
-    this->add_shader("assets/shaders/coordinate_system");
-
-    this->add_mesh("assets/meshes/sphere.mesh");
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 0.5f));
-    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
-    this->objects.back()->set_property_value(prop_id, &glm::vec3(0,0,0)[0]);
-    this->objects.back()->load();
-
-    this->add_mesh("assets/meshes/arrow.mesh");
-
-    // z-coordinate
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
-    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
-    this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(0,0,1)));
-    this->objects.back()->load();
-
-    // y-coordinate
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
-    this->objects.back()->set_rotation_matrix(glm::rotate(-(float)M_PI / 2.0f, glm::vec3(1.0f,0.0f,0.0f)));
-    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
-    this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(0,1,0)));
-    this->objects.back()->load();
-
-    // x-coordinate
-    this->objects.push_back(new Object(this->shaders.back(), this->meshes.back()));
-    this->objects.back()->set_scale_matrix(glm::scale(glm::vec3(1.0) * 3.0f));
-    this->objects.back()->set_rotation_matrix(glm::rotate((float)M_PI / 2.0f, glm::vec3(0.0f,1.0f,0.0f)));
-    prop_id = this->objects.back()->add_property("object_color", ShaderUniform::VEC3, 1);
-    this->objects.back()->set_property_value(prop_id, glm::value_ptr(glm::vec3(1,0,0)));
-    this->objects.back()->load();
-
     const unsigned int hq_tex_id = TextureManager::get().load_texture("assets/png/hq.png");
     this->add_shader("assets/shaders/turbine");
     this->add_mesh("assets/meshes/hq.x");
@@ -74,8 +37,8 @@ ObjectsEngine::ObjectsEngine() {
 
     // setup 3x3 array of wind turbines
 
-    for(unsigned int i=0; i<3; i++) {
-        for(unsigned int j=0; j<3; j++) {
+    for(unsigned int i=0; i<10; i++) {
+        for(unsigned int j=0; j<10; j++) {
 
             float x = (float)(50 + i * 5);
             float y = (float)(50 + j * 5);
@@ -91,7 +54,7 @@ ObjectsEngine::ObjectsEngine() {
 
 void ObjectsEngine::update(double dt) {
     for(unsigned int i=0; i<this->objects.size(); i++) {
-        this->objects[i]->update(dt * (double)i / 10.0);
+        this->objects[i]->update(dt);
     }
 }
 
