@@ -387,7 +387,7 @@ void FontWriter::calculate_distance_field(std::vector<uint8_t>& distance_field, 
                     if(i >= 0 && i < width && j >= 0 && j < height) {
                         if(data[l + width*k] != data[i + width*j]) {
                             float dist = std::sqrt((float)((i-l)*(i-l)) + (float)((j-k)*(j-k)));
-                            std::min(distance, dist);
+                            distance = std::min(distance, dist);
                         }
                     }
                 }
