@@ -26,8 +26,8 @@
  * @return      FontWriter instance
  */
 FontWriter::FontWriter() {
-    this->base_font_size = 8;
-    this->display_charmap = false;
+    this->base_font_size = 32;
+    this->display_charmap = true;
     this->is_cached = false;
 
     if(FT_Init_FreeType(&this->library)) {
@@ -194,41 +194,14 @@ void FontWriter::static_load() {
     glBindVertexArray(0);
 }
 
-void FontWriter::calculate_distance_field(uint8_t* distance_field, const std::vector<bool>& data, int width, int height) {
-    static const int sample_depth = 3;
-    static const float max_dist = std::sqrt((float)(2 * sample_depth * sample_depth));
-
-    for(int k=0; k<height; k++) {
-        for(int l=0; l<width; l++){
-
-            float distance = max_dist;
-            for(int j=k-sample_depth; j<=k+sample_depth; j++) {
-                for(int i=l-sample_depth; i<=l+sample_depth; i++) {
-                    if(i >= 0 && i < width && j >= 0 && j < height) {
-                        if(data[l + width*k] != data[i + width*j]) {
-                            float dist = std::sqrt((float)((i-l)*(i-l)) + (float)((j-k)*(j-k)));
-                            std::min(distance, dist);
-                        }
-                    }
-                }
-            }
-
-            if(data[l + width*k]) { // inside
-                distance_field[l+k*width] = (0.5f + (distance / max_dist) * 0.5f) * (uint8_t)128;
-            } else { // outside
-                distance_field[l+k*width] = (0.5f - (distance / max_dist) * 0.5f) * (uint8_t)128;
-            }
-        }
-    }
-}
-
 void FontWriter::add_charmap_to_screen() {
     float tscale = 1.0f;
     if(this->texture_width > 200) {
         tscale = 200.0f / (float)this->texture_width;
     }
+    tscale = 1.0f;
     const float mx = (float)Screen::get().get_width() - this->texture_width * tscale - 10;
-    const float my = (float)Screen::get().get_height() - this->texture_height * tscale  - 10;
+    const float my = 0;
 
     this->positions.push_back(glm::vec2(mx, my));
     this->positions.push_back(glm::vec2(mx + this->texture_width * tscale , my));
@@ -253,7 +226,7 @@ void FontWriter::add_charmap_to_screen() {
  */
 void FontWriter::generate_character_map() {
 
-    std::vector<std::vector<uint8_t>> char_bitmaps(255);
+    std::vector<std::vector<bool>> char_bitmaps(255);
     unsigned int img_width = 0;         // total image width
     unsigned int img_height = 0;        // total image height
 
@@ -274,38 +247,25 @@ void FontWriter::generate_character_map() {
 
         FT_Set_Char_Size( face, base_font_size * 64, base_font_size * 64, 128, 128);
 
-        if(FT_Load_Glyph( face, FT_Get_Char_Index( face, c ), FT_LOAD_DEFAULT )) {
-            std::cerr << "FT_Load_Glyph failed" << std::endl;
+        if(FT_Load_Char(face, c, FT_LOAD_RENDER | FT_LOAD_TARGET_MONO)) {
+            std::cerr << "Error loading char." << std::endl;
         }
 
-        // Move The Face's Glyph Into A Glyph Object.
-        FT_Glyph glyph;
-        if(FT_Get_Glyph( face->glyph, &glyph )) {
-            std::cerr << "FT_Load_Glyph failed" << std::endl;
-        }
+        const unsigned int width = face->glyph->bitmap.width + 2 * this->font_padding;
+        const unsigned int height = face->glyph->bitmap.rows + 2 * this->font_padding;
 
-        FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, 0, 1 );
-        FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)glyph;
-        FT_Bitmap& bitmap=bitmap_glyph->bitmap;
-
-        const unsigned int width = bitmap.width;
-        const unsigned int height = bitmap.rows;
-
-        this->glyphs[i].width = face->glyph->metrics.width / 64;
-        this->glyphs[i].height = face->glyph->metrics.height / 64;
+        this->glyphs[i].width = face->glyph->bitmap.width;
+        this->glyphs[i].height = face->glyph->bitmap.rows;
         this->glyphs[i].horizontal_bearing = face->glyph->metrics.horiBearingX / 64;
         this->glyphs[i].vertical_bearing = face->glyph->metrics.horiBearingY / 64;
         this->glyphs[i].horizontal_advance =  face->glyph->metrics.horiAdvance / 64;
 
-        char_bitmaps[i] = std::vector<uint8_t>(width * height, 0.0);
-        for(unsigned int j=0; j<(width*height); j++) {
-            char_bitmaps[i][j] = bitmap.buffer[j];
-        }
+        char_bitmaps[i] = this->unpack_mono_bitmap(face->glyph->bitmap);
 
         FT_Done_Face(face);
 
-        temp_x += width + 5;
-        temp_y = std::max(temp_y, height + 5);
+        temp_x += width;
+        temp_y = std::max(temp_y, height);
 
         if(counter % 10 == 0) {
             counter = 0;
@@ -328,10 +288,7 @@ void FontWriter::generate_character_map() {
 
     // create a texture from the stored information, set the base value
     // to zero
-    std::vector<uint8_t> expanded_data(img_width * img_height);
-    for(unsigned int i=0; i<img_width * img_height; i++) {
-        expanded_data[i] = 0;
-    }
+    std::vector<uint8_t> expanded_data(img_width * img_height, 0.0);
     temp_y = 0;
     unsigned int gy = 0;
     unsigned int gx = 0;
@@ -339,21 +296,21 @@ void FontWriter::generate_character_map() {
     counter = 0;
     for(unsigned int i=32; i<=126; i++) {
         counter++;
-        const unsigned int width = this->glyphs[i].width;
-        const unsigned int height = this->glyphs[i].height;
+        const unsigned int width = this->glyphs[i].width + 2 * this->font_padding;
+        const unsigned int height = this->glyphs[i].height + 2 * this->font_padding;
 
         this->glyphs[i].x = gx;
         this->glyphs[i].y = gy;
 
-        // uint8_t* distance_field = new uint8_t[width * height];
-        // this->calculate_distance_field(distance_field,
-        //                                char_bitmaps[i],
-        //                                width,
-        //                                height);
+        std::vector<uint8_t> distance_field(width * height, 0.0f);
+        this->calculate_distance_field(distance_field,
+                                       char_bitmaps[i],
+                                       width,
+                                       height);
 
         for(unsigned int k=0; k<height; k++) {
             for(unsigned int l=0; l<width; l++){
-                expanded_data[(l+gx)+(k+gy)*img_width] = char_bitmaps[i][l + width*k];
+                expanded_data[(l+gx)+(k+gy)*img_width] = distance_field[l + width*k];
             }
         }
 
@@ -362,8 +319,8 @@ void FontWriter::generate_character_map() {
         this->glyphs[i].ty1 = (float)(gy + height) / (float)img_height;
         this->glyphs[i].ty2 = (float)(gy) / (float)img_height;
 
-        gx += width + 5;
-        temp_y = std::max(temp_y, height + 5);
+        gx += width;
+        temp_y = std::max(temp_y, height);
 
         if(counter % 10 == 0) {
             gx = 0;
@@ -392,4 +349,55 @@ void FontWriter::generate_character_map() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+std::vector<bool> FontWriter::unpack_mono_bitmap(FT_Bitmap bitmap) {
+    std::vector<bool> result( (bitmap.rows + 2 * this->font_padding) * (bitmap.width + 2 * this->font_padding), false);
+
+    for (int y = 0; y < bitmap.rows; y++) {
+        for (int byte_index = 0; byte_index < bitmap.pitch; byte_index++) {
+
+            unsigned char byte_value = bitmap.buffer[y * bitmap.pitch + byte_index];
+
+            int num_bits_done = byte_index * 8;
+
+            int rowstart = (y + this->font_padding) * (bitmap.width + 2 * this->font_padding) + byte_index * 8 + this->font_padding;
+
+            for (int bit_index = 0; bit_index < std::min(8, (int)(bitmap.width - num_bits_done)); bit_index++) {
+                int bit = byte_value & (1 << (7 - bit_index));
+
+                result[rowstart + bit_index] = bit;
+            }
+        }
+    }
+
+    return result;
+}
+
+void FontWriter::calculate_distance_field(std::vector<uint8_t>& distance_field, const std::vector<bool>& data, int width, int height) {
+    static const int sample_depth = 10;
+    const float max_dist = std::sqrt((float)(2 * sample_depth * sample_depth));
+
+    for(int k=0; k<height; k++) {
+        for(int l=0; l<width; l++){
+
+            float distance = max_dist;
+            for(int j=k-sample_depth; j<=k+sample_depth; j++) {
+                for(int i=l-sample_depth; i<=l+sample_depth; i++) {
+                    if(i >= 0 && i < width && j >= 0 && j < height) {
+                        if(data[l + width*k] != data[i + width*j]) {
+                            float dist = std::sqrt((float)((i-l)*(i-l)) + (float)((j-k)*(j-k)));
+                            std::min(distance, dist);
+                        }
+                    }
+                }
+            }
+
+            if(data[l + width*k]) { // inside
+                distance_field[l+k*width] = (0.5f + (distance / max_dist) * 0.5f) * 255.0f;
+            } else { // outside
+                distance_field[l+k*width] = (0.5f - (distance / max_dist) * 0.5f) * 255.0f;
+            }
+        }
+    }
 }

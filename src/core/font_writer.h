@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <list>
+#include <algorithm>
 
 #include "shader.h"
 #include "screen.h"
@@ -44,6 +45,8 @@
 class FontWriter {
 private:
     FT_Library library;         //!< FreeType library
+
+    const unsigned int font_padding = 10;
 
     /**
      * @struct Glyph
@@ -161,12 +164,14 @@ private:
      * @param[in]   height              height of the char bitmap
      *
      */
-    void calculate_distance_field(uint8_t* distance_field, const std::vector<bool>& data, int width, int height);
+    void calculate_distance_field(std::vector<uint8_t>& distance_field, const std::vector<bool>& data, int width, int height);
 
     /**
      * @brief add vertices to display the charmap to the screen
      */
     void add_charmap_to_screen();
+
+    std::vector<bool> unpack_mono_bitmap(FT_Bitmap bitmap);
 
     FontWriter(FontWriter const&)          = delete;
     void operator=(FontWriter const&)  = delete;
