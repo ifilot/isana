@@ -27,7 +27,7 @@
  */
 FontWriter::FontWriter() {
     this->base_font_size = 32;
-    this->display_charmap = true;
+    this->display_charmap = false;
     this->is_cached = false;
 
     if(FT_Init_FreeType(&this->library)) {
@@ -37,7 +37,7 @@ FontWriter::FontWriter() {
     this->glyphs.resize(255);
     this->generate_character_map();
 
-    this->shader = new Shader("assets/shaders/text");
+    this->shader = new Shader("assets/shaders/text_sdf");
     this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "position");
     this->shader->add_attribute(ShaderAttribute::TEXTURE_COORDINATE, "texture_coordinate");
     this->shader->add_uniform(ShaderUniform::MAT4, "projection", 1);
@@ -110,6 +110,7 @@ void FontWriter::render_line(float x, float y, const std::string& line) {
 
     const float font_pt = 8.0f;
     const float scale = font_pt / (float)base_font_size;
+    const float pts = scale * (float)this->font_padding;
 
     for(unsigned int i=0; i<line.size(); i++) {
         unsigned int c = (unsigned int)line.at(i);
@@ -117,10 +118,10 @@ void FontWriter::render_line(float x, float y, const std::string& line) {
         const float fx = wx + (float)this->glyphs[c].horizontal_bearing * scale;
         const float fy = wy - (float)(this->glyphs[c].height - this->glyphs[c].vertical_bearing) * scale;
 
-        this->positions.push_back(glm::vec2(fx, fy));
-        this->positions.push_back(glm::vec2(fx + (float)this->glyphs[c].width * scale, fy));
-        this->positions.push_back(glm::vec2(fx + (float)this->glyphs[c].width * scale, fy + (float)this->glyphs[c].height * scale));
-        this->positions.push_back(glm::vec2(fx, fy + (float)this->glyphs[c].height * scale));
+        this->positions.push_back(glm::vec2(fx - pts, fy - pts));
+        this->positions.push_back(glm::vec2(fx + pts + (float)this->glyphs[c].width * scale, fy - pts));
+        this->positions.push_back(glm::vec2(fx + pts + (float)this->glyphs[c].width * scale, fy + pts + (float)this->glyphs[c].height * scale));
+        this->positions.push_back(glm::vec2(fx - pts, fy + pts + (float)this->glyphs[c].height * scale));
 
         this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx1, this->glyphs[c].ty1));
         this->texture_coordinates.push_back(glm::vec2(this->glyphs[c].tx2, this->glyphs[c].ty1));

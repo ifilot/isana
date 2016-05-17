@@ -6,14 +6,12 @@ out vec4 color;
 uniform sampler2D text;
 uniform vec3 textcolor;
 
+float width = 0.46;
+float edge = 0.19;
+
 void main() {
-    float ra = texture(text, texcoord).r;
-    const float delta = 0.4f;
+    float distance = 1.0 - texture(text, texcoord).r;
+    float alpha = 1.0 - smoothstep(width, width+edge, distance);
 
-    if(ra > 0.5f - delta) {
-        ra = 1.0f;
-    }
-    ra = smoothstep(0.5f - delta, 0.5f + delta, ra);
-
-    color = vec4(textcolor, ra);
+    color = vec4(textcolor, alpha);
 }
