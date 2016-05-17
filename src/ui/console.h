@@ -25,6 +25,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "core/camera.h"
 #include "core/shader.h"
 #include "core/font_writer.h"
 #include "core/mesh.h"

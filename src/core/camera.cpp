@@ -71,7 +71,7 @@ void Camera::set_aspect_ratio(const float& aspect_ratio) {
  */
 void Camera::pan_left() {
     static const glm::vec4 v(-5, 0, 0, 1);
-    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->theta, glm::vec3(0,0,1));
     this->look_at += glm::vec3(rot * v);
 }
 
@@ -80,7 +80,7 @@ void Camera::pan_left() {
  */
 void Camera::pan_right() {
     static const glm::vec4 v(5, 0, 0, 1);
-    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->theta, glm::vec3(0,0,1));
     this->look_at += glm::vec3(rot * v);
 }
 
@@ -89,7 +89,7 @@ void Camera::pan_right() {
  */
 void Camera::pan_up() {
     static const glm::vec4 v(0, -5, 0, 1);
-    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->theta, glm::vec3(0,0,1));
     this->look_at += glm::vec3(rot * v);
 }
 
@@ -98,7 +98,7 @@ void Camera::pan_up() {
  */
 void Camera::pan_down() {
     static const glm::vec4 v(0, 5, 0, 1);
-    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->angle, glm::vec3(0,0,1));
+    const glm::mat4 rot = glm::rotate(glm::mat4(1.0), this->theta, glm::vec3(0,0,1));
     this->look_at += glm::vec3(rot * v);
 }
 
@@ -123,14 +123,24 @@ const glm::vec3& Camera::get_position() const {
 }
 
 /**
- * @brief       calculate the position of the camera from the angle and orientation
+ * @brief       calculate the position of the camera from the theta and orientation
  *
  * @return      void
  */
 void Camera::calculate_position() {
-    glm::vec3 cam_vec(std::sin(this->angle),
-                      -std::cos(this->angle),
-                      std::sin(60.0f * 2.0f * M_PI / 360.0f));
+
+    if(this->distance > 150.0f) {
+        this->phi = 0.01f;
+    } else if(this->distance < 50.0f) {
+        this->phi = glm::radians(60.0f);
+    } else {
+        this->phi = glm::radians(60.0f - (this->distance - 55.0f) / 100.0f * 60.0f);
+    }
+
+    glm::vec3 cam_vec(std::sin(this->theta) * std::sin(this->phi),
+                      -std::cos(this->theta) * std::sin(this->phi),
+                      std::cos(this->phi)
+                      );
     cam_vec *= this->distance;
     this->position = this->look_at + cam_vec;
 }
@@ -142,7 +152,8 @@ void Camera::calculate_position() {
  */
 Camera::Camera() {
     this->look_at = glm::vec3(50.0f, 50.0f, 0.0f);
-    this->angle = 0.0f * 2.0f * M_PI; // orient to south
+    this->theta = 0.0f * 2.0f * M_PI; // orient to south
+    this->phi = 0.1f * 2.0f * M_PI; // orient to south
     this->distance = 50.0f;
 
     this->calculate_position();

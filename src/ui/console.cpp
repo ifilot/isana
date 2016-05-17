@@ -54,6 +54,8 @@ void Console::draw() {
     this->add_line_left("Project ISANA");
     this->add_line_left("Version 0.1.0");
     this->add_line_left("Compiled at " + std::string(__DATE__));
+    this->add_line_left("Camera pos " + glm::to_string(Camera::get().get_position()));
+    this->add_line_left("Camera distance " + boost::lexical_cast<std::string>(Camera::get().get_distance()));
 
     for(unsigned int i=0; i<this->log.size(); i++) {
         this->add_line_right("[" + (boost::format("%10.5f") % log_times[i]).str() + "] " + log[i]);

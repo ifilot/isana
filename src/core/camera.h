@@ -76,6 +76,10 @@ public:
      */
     const glm::vec3& get_position() const;
 
+    inline float get_distance() const {
+        return this->distance;
+    }
+
     /**
      * @brief       set the camera position
      *
@@ -114,9 +118,9 @@ public:
      * @brief      rotate the camera in the clock-wise direction
      */
     inline void angle_cw() {
-        this->angle -= 0.1f;
-        if(this->angle < 2.0f * M_PI) {
-            this->angle += 2.0f * M_PI;
+        this->theta -= 0.1f;
+        if(this->theta < 2.0f * M_PI) {
+            this->theta += 2.0f * M_PI;
         }
     }
 
@@ -124,16 +128,16 @@ public:
      * @brief      reset the rotation angle
      */
     inline void reset_angle() {
-        this->angle = 0.0f;
+        this->theta = 0.0f;
     }
 
     /**
      * @brief      rotate the camera in the counter-clock-wise direction
      */
     inline void angle_ccw() {
-        this->angle += 0.1f;
-        if(this->angle > 2.0f * M_PI) {
-            this->angle -= 2.0f * M_PI;
+        this->theta += 0.1f;
+        if(this->theta > 2.0f * M_PI) {
+            this->theta -= 2.0f * M_PI;
         }
     }
 
@@ -143,8 +147,8 @@ public:
     inline void zoom_out() {
         this->distance += 1.0;
 
-        if(distance > 100.0) {
-            distance = 100.0;
+        if(distance > 150.0) {
+            distance = 150.0;
         }
     }
 
@@ -154,8 +158,8 @@ public:
     inline void zoom_in() {
         this->distance -= 1.0;
 
-        if(distance < 5.0) {
-            distance = 5.0;
+        if(distance < 50.0) {
+            distance = 50.0;
         }
     }
 
@@ -171,7 +175,8 @@ private:
     glm::mat4 view;         //!< view matrix
 
     float distance;         //!< distance of the camera with respect to looking position
-    float angle;            //!< rotation angle
+    float theta;            //!< rotation angle
+    float phi;            //!< rotation angle
 
     glm::vec3 position;     //!< position of the camera
     glm::vec3 look_at;      //!< looking position
